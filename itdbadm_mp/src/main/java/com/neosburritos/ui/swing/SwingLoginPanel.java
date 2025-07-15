@@ -143,11 +143,11 @@ public class SwingLoginPanel extends JPanel {
         
         panel.add(Box.createVerticalStrut(SwingUIConstants.PADDING_SMALL));
         
-        JLabel adminLabel = SwingUIConstants.createBodyLabel("Admin: admin@neos.com / admin123");
+        JLabel adminLabel = SwingUIConstants.createBodyLabel("Admin: admin@neosburritos.com / admin123");
         adminLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         panel.add(adminLabel);
         
-        JLabel customerLabel = SwingUIConstants.createBodyLabel("Customer: customer@neos.com / customer123");
+        JLabel customerLabel = SwingUIConstants.createBodyLabel("Customer: alice@email.com / customer123");
         customerLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         panel.add(customerLabel);
         

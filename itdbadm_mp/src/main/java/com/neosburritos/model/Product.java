@@ -76,6 +76,10 @@ public class Product {
         return currencySymbol + basePrice.toString();
     }
 
+    public BigDecimal getPriceInBigDecimal() {
+        return basePrice;
+    }
+
     @Override
     public String toString() {
         return name + " - " + getFormattedPrice();

@@ -4,27 +4,10 @@ import java.math.BigDecimal;
 import java.util.Random;
 
 /**
- * Payment processing service
- * Simulates payment processing with different payment methods
+ * Simplified Payment processing service
+ * Simulates payment processing without unnecessary payment method complexity
  */
 public class PaymentService {
-    
-    public enum PaymentMethod {
-        CREDIT_CARD("Credit Card"),
-        DEBIT_CARD("Debit Card"),
-        PAYPAL("PayPal"),
-        CASH_ON_DELIVERY("Cash on Delivery");
-        
-        private final String displayName;
-        
-        PaymentMethod(String displayName) {
-            this.displayName = displayName;
-        }
-        
-        public String getDisplayName() {
-            return displayName;
-        }
-    }
     
     /**
      * Result class for payment operations
@@ -48,10 +31,9 @@ public class PaymentService {
     private final Random random = new Random();
     
     /**
-     * Process payment for an order
+     * Process payment for an order (simplified)
      */
-    public PaymentResult processPayment(int orderId, BigDecimal amount, String currencyCode, 
-                                      PaymentMethod method, String paymentDetails) {
+    public PaymentResult processPayment(int orderId, BigDecimal amount, String currencyCode) {
         
         // Simulate payment processing delay
         try {
@@ -60,66 +42,21 @@ public class PaymentService {
             Thread.currentThread().interrupt();
         }
         
-        // Simulate payment success/failure (90% success rate)
-        boolean success = random.nextDouble() < 1;
+        // Simulate payment success/failure (95% success rate)
+        boolean success = random.nextDouble() < 0.95;
         
         if (success) {
             String transactionId = generateTransactionId();
-            String message = String.format("Payment of %s %s processed successfully via %s", 
-                                          currencyCode, amount.toString(), method.getDisplayName());
+            String message = String.format("Payment of %s %s processed successfully", 
+                                          currencyCode, amount.toString());
             
             System.out.println("Payment processed: " + message + " (Transaction ID: " + transactionId + ")");
             return new PaymentResult(true, message, transactionId);
             
         } else {
-            String message = "Payment failed. Please check your payment details and try again.";
+            String message = "Payment failed. Please try again or contact support.";
             System.out.println("Payment failed for order " + orderId);
             return new PaymentResult(false, message, null);
-        }
-    }
-    
-    /**
-     * Validate payment details based on payment method
-     */
-    public boolean validatePaymentDetails(PaymentMethod method, String paymentDetails) {
-        if (paymentDetails == null || paymentDetails.trim().isEmpty()) {
-            return false;
-        }
-        
-        switch (method) {
-            case CREDIT_CARD:
-            case DEBIT_CARD:
-                // Simple validation: should be 16 digits
-                return paymentDetails.replaceAll("\\s", "").matches("\\d{16}");
-                
-            case PAYPAL:
-                // Simple email validation
-                return paymentDetails.contains("@") && paymentDetails.contains(".");
-                
-            case CASH_ON_DELIVERY:
-                // No validation needed for COD
-                return true;
-                
-            default:
-                return false;
-        }
-    }
-    
-    /**
-     * Get payment method requirements text
-     */
-    public String getPaymentMethodRequirements(PaymentMethod method) {
-        switch (method) {
-            case CREDIT_CARD:
-                return "Enter 16-digit credit card number (e.g., 1234 5678 9012 3456)";
-            case DEBIT_CARD:
-                return "Enter 16-digit debit card number (e.g., 1234 5678 9012 3456)";
-            case PAYPAL:
-                return "Enter PayPal email address";
-            case CASH_ON_DELIVERY:
-                return "No payment details required - pay when order is delivered";
-            default:
-                return "Enter payment details";
         }
     }
     

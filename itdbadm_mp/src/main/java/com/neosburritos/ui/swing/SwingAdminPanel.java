@@ -14,13 +14,13 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 /**
- * Modern Swing-based Admin Panel with improved UX
- * Clear separation between different administrative functions
+ * Admin-only panel for managing orders and system operations
+ * Single responsibility: Administrative functions only
  */
 public class SwingAdminPanel extends JPanel {
     
     public interface AdminListener {
-        void onBackToStore();
+        // Removed onBackToStore - admin stays in admin panel
     }
     
     private final JFrame parentFrame;
@@ -121,17 +121,18 @@ public class SwingAdminPanel extends JPanel {
             SwingUIConstants.PADDING_LARGE, SwingUIConstants.PADDING_LARGE
         ));
         
-        // Title and welcome
+        // Title and admin badge (no back button for admin-only access)
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setOpaque(false);
         
         welcomeLabel.setForeground(Color.WHITE);
-        titlePanel.add(welcomeLabel, BorderLayout.WEST);
+        titlePanel.add(welcomeLabel, BorderLayout.CENTER);
         
-        // Back button
-        JButton backButton = SwingUIConstants.createSecondaryButton("← Back to Store");
-        backButton.addActionListener(e -> adminListener.onBackToStore());
-        titlePanel.add(backButton, BorderLayout.EAST);
+        // Admin badge
+        JLabel adminBadge = SwingUIConstants.createBodyLabel("🛡️ ADMIN ACCESS");
+        adminBadge.setForeground(Color.WHITE);
+        adminBadge.setFont(SwingUIConstants.SMALL_FONT);
+        titlePanel.add(adminBadge, BorderLayout.EAST);
         
         headerPanel.add(titlePanel, BorderLayout.NORTH);
         
@@ -348,60 +349,60 @@ public class SwingAdminPanel extends JPanel {
         Order fullOrder = orderDAO.getOrderById(order.getOrderId());
         
         if (fullOrder == null) {
-            orderDetailsArea.setText("Error loading order details");
+            orderDetailsArea.setText("❌ Error loading order details\n\nPlease try refreshing or check the database connection.");
             return;
         }
         
         StringBuilder details = new StringBuilder();
         
         // Order header
-        details.append("═══════════════════════════════════════\\n");
-        details.append("           ORDER #").append(fullOrder.getOrderId()).append("\\n");
-        details.append("═══════════════════════════════════════\\n\\n");
+        details.append("═══════════════════════════════════════\n");
+        details.append("           ORDER #").append(fullOrder.getOrderId()).append("\n");
+        details.append("═══════════════════════════════════════\n\n");
         
         // Basic information
-        details.append("📋 BASIC INFORMATION\\n");
-        details.append("─────────────────────\\n");
-        details.append("Customer ID: ").append(fullOrder.getUserId()).append("\\n");
-        details.append("Order Date: ").append(formatDateTime(fullOrder.getOrderDate())).append("\\n");
-        details.append("Status: ").append(formatStatus(fullOrder.getStatus())).append("\\n");
-        details.append("Total Amount: ").append(fullOrder.getFormattedTotal()).append("\\n");
-        details.append("Item Count: ").append(fullOrder.getItemCount()).append("\\n\\n");
+        details.append("📋 BASIC INFORMATION\n");
+        details.append("─────────────────────\n");
+        details.append("Customer ID: ").append(fullOrder.getUserId()).append("\n");
+        details.append("Order Date: ").append(formatDateTime(fullOrder.getOrderDate())).append("\n");
+        details.append("Status: ").append(formatStatus(fullOrder.getStatus())).append("\n");
+        details.append("Total Amount: ").append(fullOrder.getFormattedTotal()).append("\n");
+        details.append("Item Count: ").append(fullOrder.getItemCount()).append("\n\n");
         
         // Delivery information
-        details.append("🚚 DELIVERY INFORMATION\\n");
-        details.append("─────────────────────\\n");
-        details.append("Address: ").append(fullOrder.getDeliveryAddress()).append("\\n");
+        details.append("🚚 DELIVERY INFORMATION\n");
+        details.append("─────────────────────\n");
+        details.append("Address: ").append(fullOrder.getDeliveryAddress()).append("\n");
         if (fullOrder.getNotes() != null && !fullOrder.getNotes().trim().isEmpty()) {
-            details.append("Special Notes: ").append(fullOrder.getNotes()).append("\\n");
+            details.append("Special Notes: ").append(fullOrder.getNotes()).append("\n");
         }
-        details.append("\\n");
+        details.append("\n");
         
         // Order items
-        details.append("🛍️ ORDER ITEMS\\n");
-        details.append("─────────────────────\\n");
+        details.append("🛍️ ORDER ITEMS\n");
+        details.append("─────────────────────\n");
         
         if (fullOrder.getItems() != null && !fullOrder.getItems().isEmpty()) {
             for (OrderItem item : fullOrder.getItems()) {
                 details.append("• ").append(item.getProductName());
                 details.append(" (Qty: ").append(item.getQuantity()).append(")");
                 details.append(" - ").append(fullOrder.getCurrencySymbol());
-                details.append(item.getTotalPrice().toString()).append("\\n");
+                details.append(item.getTotalPrice().toString()).append("\n");
                 
                 if (item.getCustomizations() != null && !item.getCustomizations().trim().isEmpty()) {
-                    details.append("  └─ Customizations: ").append(item.getCustomizations()).append("\\n");
+                    details.append("  └─ Customizations: ").append(item.getCustomizations()).append("\n");
                 }
             }
         } else {
-            details.append("No items found\\n");
+            details.append("No items found\n");
         }
         
         // Timeline
-        details.append("\\n⏰ ORDER TIMELINE\\n");
-        details.append("─────────────────────\\n");
-        details.append("Created: ").append(formatDateTime(fullOrder.getCreatedAt())).append("\\n");
+        details.append("\n⏰ ORDER TIMELINE\n");
+        details.append("─────────────────────\n");
+        details.append("Created: ").append(formatDateTime(fullOrder.getCreatedAt())).append("\n");
         if (fullOrder.getUpdatedAt() != null && !fullOrder.getUpdatedAt().equals(fullOrder.getCreatedAt())) {
-            details.append("Last Updated: ").append(formatDateTime(fullOrder.getUpdatedAt())).append("\\n");
+            details.append("Last Updated: ").append(formatDateTime(fullOrder.getUpdatedAt())).append("\n");
         }
         
         orderDetailsArea.setText(details.toString());
@@ -487,7 +488,7 @@ public class SwingAdminPanel extends JPanel {
         
         if (allOrders.isEmpty()) {
             orderListModel.addElement("No orders found");
-            orderDetailsArea.setText("No orders in the system.\\n\\nOrders will appear here as customers place them.");
+            orderDetailsArea.setText("No orders in the system.\n\nOrders will appear here as customers place them.");
         } else {
             for (Order order : allOrders) {
                 String displayText = String.format("Order #%d - User %d - %s - %s",

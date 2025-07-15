@@ -67,69 +67,69 @@ public class OrderDAO {
     }
     
     /**
-     * Get order by ID with items - using sp_get_order_details
+     * Get order by ID with items - using direct SQL for reliability
      */
     public Order getOrderById(int orderId) {
-        String sql = "{CALL sp_get_order_details(?, ?)}";
+        Order order = null;
+        
+        // First get the order header
+        String orderSql = """
+            SELECT 
+                o.order_id,
+                o.user_id,
+                o.order_date,
+                o.total_amount,
+                c.currency_code,
+                c.symbol as currency_symbol,
+                o.status,
+                o.delivery_address,
+                o.notes,
+                o.created_at,
+                o.updated_at
+            FROM orders o
+            JOIN currencies c ON o.currency_id = c.currency_id
+            WHERE o.order_id = ?
+            """;
         
         try (Connection conn = DatabaseConnectionManager.getConnection();
-             CallableStatement stmt = conn.prepareCall(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(orderSql)) {
             
             stmt.setInt(1, orderId);
-            stmt.setInt(2, 0); // We'll need to modify this to accept user_id parameter
             
-            boolean hasResults = stmt.execute();
-            Order order = null;
-            
-            if (hasResults) {
-                // First result set - order header
-                try (ResultSet rs = stmt.getResultSet()) {
-                    if (rs.next()) {
-                        order = new Order();
-                        order.setOrderId(rs.getInt("order_id"));
-                        order.setOrderDate(rs.getTimestamp("order_date").toLocalDateTime());
-                        order.setTotalAmount(rs.getBigDecimal("total_amount"));
-                        order.setCurrencyCode(rs.getString("currency_code"));
-                        order.setCurrencySymbol(rs.getString("currency_symbol"));
-                        order.setStatus(Order.Status.valueOf(rs.getString("status")));
-                        order.setDeliveryAddress(rs.getString("delivery_address"));
-                        order.setNotes(rs.getString("notes"));
-                    }
-                }
-                
-                // Second result set - order items
-                if (order != null && stmt.getMoreResults()) {
-                    try (ResultSet rs = stmt.getResultSet()) {
-                        java.util.List<OrderItem> items = new ArrayList<>();
-                        while (rs.next()) {
-                            OrderItem item = new OrderItem();
-                            item.setOrderItemId(rs.getInt("order_item_id"));
-                            item.setOrderId(rs.getInt("order_id"));
-                            item.setProductId(rs.getInt("product_id"));
-                            item.setProductName(rs.getString("product_name"));
-                            item.setQuantity(rs.getInt("quantity"));
-                            item.setUnitPrice(rs.getBigDecimal("unit_price"));
-                            item.setTotalPrice(rs.getBigDecimal("total_price"));
-                            item.setCustomizations(rs.getString("customizations"));
-                            items.add(item);
-                        }
-                        order.setItems(items);
-                        order.setItemCount(items.size());
-                    }
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    order = new Order();
+                    order.setOrderId(rs.getInt("order_id"));
+                    order.setUserId(rs.getInt("user_id"));
+                    order.setOrderDate(rs.getTimestamp("order_date").toLocalDateTime());
+                    order.setTotalAmount(rs.getBigDecimal("total_amount"));
+                    order.setCurrencyCode(rs.getString("currency_code"));
+                    order.setCurrencySymbol(rs.getString("currency_symbol"));
+                    order.setStatus(Order.Status.valueOf(rs.getString("status")));
+                    order.setDeliveryAddress(rs.getString("delivery_address"));
+                    order.setNotes(rs.getString("notes"));
+                    order.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                    order.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
                 }
             }
             
-            return order;
-            
         } catch (SQLException e) {
-            System.err.println("Error getting order: " + e.getMessage());
+            System.err.println("Error getting order header: " + e.getMessage());
+            return null;
         }
         
-        return null;
+        // If order found, get the items
+        if (order != null) {
+            List<OrderItem> items = getOrderItems(orderId);
+            order.setItems(items);
+            order.setItemCount(items.size());
+        }
+        
+        return order;
     }
     
     /**
-     * Get order items for an order - using direct SQL since sp_get_order_details handles this
+     * Get order items for an order - using direct SQL
      */
     public List<OrderItem> getOrderItems(int orderId) {
         List<OrderItem> items = new ArrayList<>();
@@ -146,6 +146,7 @@ public class OrderDAO {
             FROM order_items oi
             JOIN products p ON oi.product_id = p.product_id
             WHERE oi.order_id = ?
+            ORDER BY oi.order_item_id
             """;
         
         try (Connection conn = DatabaseConnectionManager.getConnection();
@@ -177,17 +178,37 @@ public class OrderDAO {
     }
     
     /**
-     * Get orders for a user
+     * Get orders for a user - using direct SQL for reliability
      */
     public List<Order> getUserOrders(int userId) {
         List<Order> orders = new ArrayList<>();
-        String sql = "{CALL sp_get_order_history(?, ?)}";
+        String sql = """
+            SELECT 
+                o.order_id,
+                o.user_id,
+                o.order_date,
+                o.total_amount,
+                c.currency_code,
+                c.symbol as currency_symbol,
+                o.status,
+                o.delivery_address,
+                o.notes,
+                COUNT(oi.order_item_id) as item_count,
+                o.created_at,
+                o.updated_at
+            FROM orders o
+            JOIN currencies c ON o.currency_id = c.currency_id
+            LEFT JOIN order_items oi ON o.order_id = oi.order_id
+            WHERE o.user_id = ?
+            GROUP BY o.order_id
+            ORDER BY o.order_date DESC
+            LIMIT 50
+            """;
         
         try (Connection conn = DatabaseConnectionManager.getConnection();
-             CallableStatement stmt = conn.prepareCall(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setInt(1, userId);
-            stmt.setInt(2, 50); // Limit to 50 orders
             
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -202,6 +223,8 @@ public class OrderDAO {
                     order.setDeliveryAddress(rs.getString("delivery_address"));
                     order.setNotes(rs.getString("notes"));
                     order.setItemCount(rs.getInt("item_count"));
+                    order.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                    order.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
                     
                     orders.add(order);
                 }
@@ -218,19 +241,16 @@ public class OrderDAO {
      * Update order status
      */
     public boolean updateOrderStatus(int orderId, Order.Status status) {
-        String sql = "{CALL sp_update_order_status(?, ?, ?, ?)}";
+        String sql = "UPDATE orders SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?";
         
         try (Connection conn = DatabaseConnectionManager.getConnection();
-             CallableStatement stmt = conn.prepareCall(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setInt(1, orderId);
-            stmt.setString(2, status.name());
-            stmt.registerOutParameter(3, Types.BOOLEAN);
-            stmt.registerOutParameter(4, Types.VARCHAR);
+            stmt.setString(1, status.name());
+            stmt.setInt(2, orderId);
             
-            stmt.executeUpdate();
-            
-            return stmt.getBoolean(3);
+            int rowsUpdated = stmt.executeUpdate();
+            return rowsUpdated > 0;
             
         } catch (SQLException e) {
             System.err.println("Error updating order status: " + e.getMessage());
@@ -239,7 +259,7 @@ public class OrderDAO {
     }
     
     /**
-     * Get all orders (admin function) - using direct SQL since no specific SP exists
+     * Get all orders (admin function) - using direct SQL
      */
     public List<Order> getAllOrders() {
         List<Order> orders = new ArrayList<>();
@@ -262,6 +282,7 @@ public class OrderDAO {
             LEFT JOIN order_items oi ON o.order_id = oi.order_id
             GROUP BY o.order_id
             ORDER BY o.order_date DESC
+            LIMIT 100
             """;
         
         try (Connection conn = DatabaseConnectionManager.getConnection();

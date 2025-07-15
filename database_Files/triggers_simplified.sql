@@ -10,21 +10,21 @@ DELIMITER //
 -- =====================================================
 -- AUDIT TRIGGERS (SIMPLIFIED)
 -- =====================================================
-
 -- Log order status changes (simplified)
 CREATE TRIGGER tr_order_status_log
 AFTER UPDATE ON orders
 FOR EACH ROW
 BEGIN
     IF OLD.status != NEW.status THEN
-        INSERT INTO transaction_log (order_id, payment_status, amount, transaction_reference, processed_at)
-        VALUES (NEW.order_id, 'COMPLETED', NEW.total_amount, 
+        INSERT INTO transaction_log (order_id, payment_status, amount, currency_id, transaction_reference, processed_at)
+        VALUES (NEW.order_id, NEW.status, NEW.total_amount, OLD.currency_id,
                 CONCAT('STATUS_CHANGE_', OLD.status, '_TO_', NEW.status), CURRENT_TIMESTAMP);
     END IF;
 END //
 
 -- =====================================================
 -- DATA INTEGRITY TRIGGERS
+-- Enforces business rules
 -- =====================================================
 
 -- Validate stock before adding to cart
@@ -81,7 +81,7 @@ CREATE TRIGGER tr_restore_stock_on_cancel
 AFTER UPDATE ON orders
 FOR EACH ROW
 BEGIN
-    IF OLD.status IN ('CONFIRMED', 'PREPARING') AND NEW.status = 'CANCELLED' THEN
+    IF OLD.status IN ('CONFIRMED', 'PENDING') AND NEW.status = 'CANCELLED' THEN
         UPDATE products p
         JOIN order_items oi ON p.product_id = oi.product_id
         SET p.stock_quantity = p.stock_quantity + oi.quantity
@@ -140,7 +140,7 @@ CREATE TRIGGER tr_protect_completed_orders
 BEFORE UPDATE ON orders
 FOR EACH ROW
 BEGIN
-    IF OLD.status IN ('DELIVERED', 'CANCELLED') AND NEW.status != OLD.status THEN
+    IF OLD.status IN ('COMPLETED', 'CANCELLED') AND NEW.status != OLD.status THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot modify completed or cancelled orders';
     END IF;
 END //

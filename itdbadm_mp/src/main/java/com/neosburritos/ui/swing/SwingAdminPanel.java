@@ -1,17 +1,36 @@
 package com.neosburritos.ui.swing;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.border.TitledBorder;
+
 import com.neosburritos.dao.OrderDAO;
 import com.neosburritos.dao.ProductDAO;
 import com.neosburritos.dao.UserDAO;
 import com.neosburritos.model.Order;
 import com.neosburritos.model.OrderItem;
 import com.neosburritos.model.User;
-
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.util.List;
 
 /**
  * Admin-only panel for managing orders and system operations
@@ -82,7 +101,7 @@ public class SwingAdminPanel extends JPanel {
         orderDetailsArea.setEditable(false);
         
         // Status update components
-        String[] statuses = {"PENDING", "CONFIRMED", "PREPARING", "READY", "DELIVERED", "CANCELLED"};
+        String[] statuses = {"PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"};
         statusComboBox = SwingUIConstants.createStyledComboBox(statuses);
         statusComboBox.setEnabled(false);
         

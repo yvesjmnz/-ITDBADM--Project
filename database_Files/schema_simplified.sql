@@ -92,7 +92,7 @@ CREATE TABLE orders (
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'When order was placed',
     total_amount DECIMAL(10,2) NOT NULL COMMENT 'Total order amount',
     currency_id INT NOT NULL COMMENT 'Currency used for this order',
-    status ENUM('PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DELIVERED', 'CANCELLED') DEFAULT 'PENDING' COMMENT 'Order status',
+    status ENUM('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED') DEFAULT 'PENDING' COMMENT 'Order status',
     delivery_address TEXT COMMENT 'Delivery address for this order',
     notes TEXT COMMENT 'Special instructions',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -121,14 +121,17 @@ CREATE TABLE order_items (
 -- PURPOSE: Logs payment transactions for auditing
 -- SIMPLIFIED: Removed payment_method complexity
 -- =====================================================
+DROP TABLE IF EXISTS transaction_log;
 CREATE TABLE transaction_log (
     transaction_id INT PRIMARY KEY AUTO_INCREMENT,
     order_id INT NOT NULL COMMENT 'Reference to the order being paid',
-    payment_status ENUM('PENDING', 'COMPLETED', 'FAILED', 'REFUNDED') DEFAULT 'PENDING' COMMENT 'Payment status',
+    payment_status ENUM('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED') DEFAULT 'PENDING' COMMENT 'Payment status',
     amount DECIMAL(10,2) NOT NULL COMMENT 'Transaction amount',
     transaction_reference VARCHAR(100) COMMENT 'Contains Transaction ID or Status Change (If changed by admin)',
     processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'When transaction was processed',
-    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE RESTRICT
+    currency_id INT COMMENT 'Reference to the currency selected by the user',
+    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE RESTRICT,
+	FOREIGN KEY (currency_id) REFERENCES orders(currency_id)
 );
 
 -- =====================================================

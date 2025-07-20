@@ -270,7 +270,13 @@ public final class SwingUIConstants {
     public static void showErrorDialog(Component parent, String message, String title) {
         JOptionPane.showMessageDialog(parent, message, title, JOptionPane.ERROR_MESSAGE);
     }
-    
+
+    /**
+     * Show info dialog
+     */
+    public static void showInfoDialog(Component parent, String message, String title) {
+    JOptionPane.showMessageDialog(parent, message, title, JOptionPane.INFORMATION_MESSAGE);
+}    
     /**
      * Show modern success dialog
      */

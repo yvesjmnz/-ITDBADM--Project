@@ -17,6 +17,7 @@ public class SwingLoginPanel extends JPanel {
     public interface LoginListener {
         void onLoginSuccess(User user);
         void onLoginFailure(String message);
+        void onRegisterRequest();
     }
     
     private final JFrame parentFrame;
@@ -232,9 +233,7 @@ public class SwingLoginPanel extends JPanel {
     }
     
     private void handleRegister() {
-        SwingUIConstants.showWarningDialog(parentFrame, 
-            "Registration feature coming soon!\\nFor now, please use the demo credentials provided.", 
-            "Registration Not Available");
+        loginListener.onRegisterRequest();
     }
     
     private void showStatus(String message, Color color) {

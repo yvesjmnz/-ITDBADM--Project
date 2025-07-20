@@ -21,10 +21,12 @@ import com.neosburritos.ui.swing.SwingAdminPanel;
 import com.neosburritos.ui.swing.SwingCartPanel;
 import com.neosburritos.ui.swing.SwingCheckoutPanel;
 import com.neosburritos.ui.swing.SwingLoginPanel;
+import com.neosburritos.ui.swing.SwingRegisterPanel;
 import com.neosburritos.ui.swing.SwingOrderHistoryPanel;
 import com.neosburritos.ui.swing.SwingStorePanel;
 import com.neosburritos.ui.swing.SwingUIConstants;
 import com.neosburritos.util.DatabaseConnection;
+
 
 /**
  * Modern Swing-based main application for Neo's Burritos Online Store
@@ -32,6 +34,7 @@ import com.neosburritos.util.DatabaseConnection;
  */
 public class NeosAppSwing extends JFrame implements 
     SwingLoginPanel.LoginListener,
+    SwingRegisterPanel.RegisterListener,
     SwingStorePanel.StoreListener,
     SwingCartPanel.CartListener,
     SwingCheckoutPanel.CheckoutListener,
@@ -53,6 +56,7 @@ public class NeosAppSwing extends JFrame implements
     private CardLayout cardLayout;
     private JPanel mainPanel;
     private SwingLoginPanel loginPanel;
+    private SwingRegisterPanel registerPanel;
     private SwingStorePanel storePanel;
     private SwingCartPanel cartPanel;
     private SwingCheckoutPanel checkoutPanel;
@@ -116,6 +120,7 @@ public class NeosAppSwing extends JFrame implements
         
         // Add panels to card layout
         mainPanel.add(loginPanel, "LOGIN");
+        mainPanel.add(registerPanel, "REGISTER");
         mainPanel.add(storePanel, "STORE");
         mainPanel.add(cartPanel, "CART");
         mainPanel.add(checkoutPanel, "CHECKOUT");
@@ -131,6 +136,7 @@ public class NeosAppSwing extends JFrame implements
     private void createPanels() {
         // Create all UI panels with Swing components
         loginPanel = new SwingLoginPanel(this, userDAO, this);
+        registerPanel = new SwingRegisterPanel(this, userDAO, this);
         storePanel = new SwingStorePanel(this, productDAO, cartDAO, this);
         cartPanel = new SwingCartPanel(this, cartDAO, this);
         checkoutPanel = new SwingCheckoutPanel(this, orderDAO, cartDAO, paymentService, this);
@@ -188,6 +194,27 @@ public class NeosAppSwing extends JFrame implements
         System.out.println("Login failed: " + message);
         // LoginPanel handles error display, no additional action needed
     }
+    @Override
+    public void onRegisterRequest() {
+        cardLayout.show(mainPanel, "REGISTER");
+    }
+
+    
+
+    // RegisterPanel.RegisterListener implementation
+    @Override
+    public void onRegisterSuccess() {
+        loginPanel.clearForm();
+        cardLayout.show(mainPanel, "LOGIN");
+        SwingUIConstants.showInfoDialog(this, "Registration successful!", "Welcome!");
+    }
+
+    @Override
+    public void onBackToLogin() {
+        loginPanel.clearForm();
+        cardLayout.show(mainPanel, "LOGIN");
+    }
+
     
     // StorePanel.StoreListener implementation
     @Override

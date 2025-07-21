@@ -1,2 +1,7 @@
-DatabaseConnection.java
-DatabaseConnectionManager.java
+# Database connection files (contains sensitive credentials)
+**/DatabaseConnection.java
+**/DatabaseConnectionManager.java
+
+# Alternative patterns for safety
+src/main/java/com/neosburritos/util/DatabaseConnection.java
+src/main/java/com/neosburritos/util/DatabaseConnectionManager.java

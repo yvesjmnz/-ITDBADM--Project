@@ -66,8 +66,8 @@ public class SwingOrderHistoryPanel extends JPanel {
         orderDetailsArea.setEditable(false);
         
         // Action buttons
-        refreshButton = SwingUIConstants.createSecondaryButton("🔄 Refresh");
-        backButton = SwingUIConstants.createPrimaryButton("← Back to Store");
+        refreshButton = SwingUIConstants.createSecondaryButton("Refresh");
+        backButton = SwingUIConstants.createPrimaryButton("Back to Store");
     }
     
     private void layoutComponents() {
@@ -164,7 +164,7 @@ public class SwingOrderHistoryPanel extends JPanel {
         
         // Instructions
         JLabel instructionLabel = SwingUIConstants.createSecondaryLabel(
-            "💡 Tip: Your most recent orders appear at the top"
+            "Tip: Your most recent orders appear at the top"
         );
         instructionLabel.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(instructionLabel, BorderLayout.SOUTH);
@@ -228,7 +228,7 @@ public class SwingOrderHistoryPanel extends JPanel {
         Order fullOrder = orderDAO.getOrderById(order.getOrderId());
         
         if (fullOrder == null) {
-            orderDetailsArea.setText("❌ Error loading order details\\n\\nPlease try refreshing or contact support if the problem persists.");
+            orderDetailsArea.setText("Error loading order details\\n\\nPlease try refreshing or contact support if the problem persists.");
             return;
         }
         
@@ -237,17 +237,17 @@ public class SwingOrderHistoryPanel extends JPanel {
         // Order header with status indicator
         details.append("═══════════════════════════════════════\\n");
         details.append("           ORDER #").append(fullOrder.getOrderId()).append("\\n");
-        details.append("═══════════════════════���═══════════════\\n\\n");
+        details.append("══════════════════════════════════════\\n\\n");
         
         // Status with visual indicator
-        details.append("📋 ORDER STATUS\\n");
+        details.append("ORDER STATUS\\n");
         details.append("─────────────────────\\n");
         details.append("Current Status: ").append(formatStatusWithIcon(fullOrder.getStatus())).append("\\n");
         details.append("Order Date: ").append(formatDateTime(fullOrder.getOrderDate())).append("\\n");
         details.append("Total Amount: ").append(fullOrder.getFormattedTotal()).append("\\n\\n");
         
         // Delivery information
-        details.append("🚚 DELIVERY INFORMATION\\n");
+        details.append("DELIVERY INFORMATION\\n");
         details.append("─────────────────────\\n");
         details.append("Delivery Address:\\n").append(fullOrder.getDeliveryAddress()).append("\\n");
         if (fullOrder.getNotes() != null && !fullOrder.getNotes().trim().isEmpty()) {
@@ -256,7 +256,7 @@ public class SwingOrderHistoryPanel extends JPanel {
         details.append("\\n");
         
         // Order items with better formatting
-        details.append("🛍️ YOUR ORDER\\n");
+        details.append("YOUR ORDER\\n");
         details.append("─────────────────────\\n");
         
         if (fullOrder.getItems() != null && !fullOrder.getItems().isEmpty()) {
@@ -277,7 +277,7 @@ public class SwingOrderHistoryPanel extends JPanel {
         }
         
         // Order timeline
-        details.append("⏰ ORDER TIMELINE\\n");
+        details.append("ORDER TIMELINE\\n");
         details.append("─────────────────────\\n");
         details.append("Order Placed: ").append(formatDateTime(fullOrder.getCreatedAt())).append("\\n");
         if (fullOrder.getUpdatedAt() != null && !fullOrder.getUpdatedAt().equals(fullOrder.getCreatedAt())) {
@@ -285,7 +285,7 @@ public class SwingOrderHistoryPanel extends JPanel {
         }
         
         // Status-specific information
-        details.append("\\n📞 WHAT'S NEXT?\\n");
+        details.append("\\nWHAT'S NEXT?\\n");
         details.append("─────────────────────\\n");
         switch (fullOrder.getStatus()) {
             case PENDING:
@@ -319,12 +319,12 @@ public class SwingOrderHistoryPanel extends JPanel {
     
     private String formatStatusWithIcon(Order.Status status) {
         switch (status) {
-            case PENDING: return "⏳ Pending Review";
-            case CONFIRMED: return "✅ Confirmed";
-            case PREPARING: return "👨‍🍳 Being Prepared";
-            case READY: return "📦 Ready for Delivery";
-            case DELIVERED: return "🎉 Delivered";
-            case CANCELLED: return "❌ Cancelled";
+            case PENDING: return "Pending Review";
+            case CONFIRMED: return "Confirmed";
+            case PREPARING: return "Being Prepared";
+            case READY: return "Ready for Delivery";
+            case DELIVERED: return "Delivered";
+            case CANCELLED: return "Cancelled";
             default: return status.toString();
         }
     }
@@ -343,14 +343,14 @@ public class SwingOrderHistoryPanel extends JPanel {
         orderListModel.clear();
         
         if (currentOrders.isEmpty()) {
-            orderListModel.addElement("🛒 No orders found");
-            orderDetailsArea.setText("🍽️ Welcome to Neo's Burritos!\\n\\n" +
+            orderListModel.addElement("No orders found");
+            orderDetailsArea.setText("Welcome to Neo's Burritos!\\n\\n" +
                                    "You haven't placed any orders yet.\\n\\n" +
                                    "Ready to try our delicious burritos?\\n" +
                                    "Click 'Back to Store' to start shopping!\\n\\n" +
                                    "Your order history will appear here once you\\n" +
                                    "place your first order.");
-            summaryLabel.setText("🛒 No orders yet - Start shopping to see your history here!");
+            summaryLabel.setText("No orders yet - Start shopping to see your history here!");
         } else {
             for (Order order : currentOrders) {
                 String statusIcon = getStatusIcon(order.getStatus());
@@ -363,7 +363,7 @@ public class SwingOrderHistoryPanel extends JPanel {
                 orderListModel.addElement(displayText);
             }
             
-            orderDetailsArea.setText("👆 Select an order from the list to view detailed information\\n\\n" +
+            orderDetailsArea.setText("Select an order from the list to view detailed information\\n\\n" +
                                    "You can see order status, delivery details, items ordered,\\n" +
                                    "and track your order progress here.");
             
@@ -377,7 +377,7 @@ public class SwingOrderHistoryPanel extends JPanel {
                     .sum();
             
             summaryLabel.setText(String.format(
-                "📊 %d Total Orders | %d Active | %d Completed", 
+                "%d Total Orders | %d Active | %d Completed", 
                 currentOrders.size(), activeOrders, completedOrders));
         }
         

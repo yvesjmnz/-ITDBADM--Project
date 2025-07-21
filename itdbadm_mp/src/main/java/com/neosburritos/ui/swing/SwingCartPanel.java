@@ -59,7 +59,7 @@ public class SwingCartPanel extends JPanel {
         setBackground(SwingUIConstants.BACKGROUND_COLOR);
         
         // Header components
-        titleLabel = SwingUIConstants.createTitleLabel("🛒 Your Shopping Cart");
+        titleLabel = SwingUIConstants.createTitleLabel("Your Shopping Cart");
         totalLabel = SwingUIConstants.createSubtitleLabel("Total: $0.00");
         totalLabel.setForeground(SwingUIConstants.PRIMARY_COLOR);
         
@@ -101,10 +101,10 @@ public class SwingCartPanel extends JPanel {
         cartTable.getColumnModel().getColumn(1).setCellRenderer(wrapRenderer);
         
         // Action buttons
-        continueShoppingButton = SwingUIConstants.createSecondaryButton("← Continue Shopping");
-        checkoutButton = SwingUIConstants.createPrimaryButton("Proceed to Checkout →");
+        continueShoppingButton = SwingUIConstants.createSecondaryButton("Continue Shopping");
+        checkoutButton = SwingUIConstants.createPrimaryButton("Proceed to Checkout");
         clearCartButton = SwingUIConstants.createDangerButton("Clear Cart");
-        refreshButton = SwingUIConstants.createSecondaryButton("🔄 Refresh");
+        refreshButton = SwingUIConstants.createSecondaryButton("Refresh");
     }
     
     private void layoutComponents() {

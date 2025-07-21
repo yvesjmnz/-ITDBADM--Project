@@ -239,22 +239,22 @@ public class ProductCustomizationDialog extends JDialog {
         ));
         
         // Create ingredient sections
-        mainPanel.add(createProteinSection("🥩 Choose Your Protein (Required)", proteinRadioButtons));
+        mainPanel.add(createProteinSection("Choose Your Protein (Required)", proteinRadioButtons));
         mainPanel.add(Box.createVerticalStrut(SwingUIConstants.PADDING_MEDIUM));
         
-        mainPanel.add(createIngredientSection("🍚 Choose Your Rice", riceCheckboxes, false));
+        mainPanel.add(createIngredientSection("Choose Your Rice", riceCheckboxes, false));
         mainPanel.add(Box.createVerticalStrut(SwingUIConstants.PADDING_MEDIUM));
         
-        mainPanel.add(createIngredientSection("🫘 Add Beans", beanCheckboxes, false));
+        mainPanel.add(createIngredientSection("Add Beans", beanCheckboxes, false));
         mainPanel.add(Box.createVerticalStrut(SwingUIConstants.PADDING_MEDIUM));
         
-        mainPanel.add(createIngredientSection("🥬 Add Vegetables", vegetableCheckboxes, false));
+        mainPanel.add(createIngredientSection("Add Vegetables", vegetableCheckboxes, false));
         mainPanel.add(Box.createVerticalStrut(SwingUIConstants.PADDING_MEDIUM));
         
-        mainPanel.add(createIngredientSection("🌶️ Choose Your Sauces", sauceCheckboxes, false));
+        mainPanel.add(createIngredientSection("Choose Your Sauces", sauceCheckboxes, false));
         mainPanel.add(Box.createVerticalStrut(SwingUIConstants.PADDING_MEDIUM));
         
-        mainPanel.add(createIngredientSection("✨ Add Extras", extraCheckboxes, false));
+        mainPanel.add(createIngredientSection("Add Extras", extraCheckboxes, false));
         mainPanel.add(Box.createVerticalStrut(SwingUIConstants.PADDING_MEDIUM));
         
         // Notes section

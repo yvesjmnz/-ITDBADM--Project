@@ -63,7 +63,7 @@ public class SwingCheckoutPanel extends JPanel {
         setBackground(SwingUIConstants.BACKGROUND_COLOR);
         
         // Header components
-        titleLabel = SwingUIConstants.createTitleLabel("💳 Checkout");
+        titleLabel = SwingUIConstants.createTitleLabel("Checkout");
         orderSummaryLabel = SwingUIConstants.createSubtitleLabel("Order Summary: $0.00");
         orderSummaryLabel.setForeground(SwingUIConstants.PRIMARY_COLOR);
         
@@ -147,7 +147,7 @@ public class SwingCheckoutPanel extends JPanel {
     }
     
     private JPanel createOrderReviewSection() {
-        JPanel section = SwingUIConstants.createSectionPanel("📋 Order Review");
+        JPanel section = SwingUIConstants.createSectionPanel("Order Review");
         
         JScrollPane scrollPane = new JScrollPane(orderItemsArea);
         scrollPane.setPreferredSize(new Dimension(0, 150));
@@ -159,7 +159,7 @@ public class SwingCheckoutPanel extends JPanel {
     }
     
     private JPanel createDeliverySection() {
-        JPanel section = SwingUIConstants.createSectionPanel("🚚 Delivery Information");
+        JPanel section = SwingUIConstants.createSectionPanel("Delivery Information");
         
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setOpaque(false);
@@ -189,7 +189,7 @@ public class SwingCheckoutPanel extends JPanel {
     }
     
     private JPanel createPaymentInfoSection() {
-        JPanel section = SwingUIConstants.createSectionPanel("��� Payment Information");
+        JPanel section = SwingUIConstants.createSectionPanel("Payment Information");
         
         JPanel infoPanel = new JPanel(new BorderLayout());
         infoPanel.setOpaque(false);
@@ -200,7 +200,7 @@ public class SwingCheckoutPanel extends JPanel {
         
         JLabel paymentInfo = SwingUIConstants.createBodyLabel(
             "<html><div style='text-align: center;'>" +
-            "🔒 Secure Payment Processing<br/>" +
+            "Secure Payment Processing<br/>" +
             "Your payment will be processed securely when you place your order.<br/>" +
             "Multiple payment methods accepted at checkout." +
             "</div></html>"

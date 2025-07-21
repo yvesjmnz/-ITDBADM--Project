@@ -68,7 +68,7 @@ public class SwingRegisterPanel extends JPanel {
         gbc.insets = new Insets(SwingUIConstants.PADDING_MEDIUM, SwingUIConstants.PADDING_MEDIUM,
                 SwingUIConstants.PADDING_MEDIUM, SwingUIConstants.PADDING_MEDIUM);
 
-        JLabel titleLabel = SwingUIConstants.createTitleLabel("🌯 Neo's Burritos");
+        JLabel titleLabel = SwingUIConstants.createTitleLabel("Neo's Burritos");
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2; gbc.anchor = GridBagConstraints.CENTER;
         mainPanel.add(titleLabel, gbc);
 

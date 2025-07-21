@@ -64,7 +64,7 @@ public class SwingStorePanel extends JPanel {
         setBackground(SwingUIConstants.BACKGROUND_COLOR);
         
         // Header components
-        welcomeLabel = SwingUIConstants.createTitleLabel("🌯 Neo's Burritos Store");
+        welcomeLabel = SwingUIConstants.createTitleLabel("Neo's Burritos Store");
         cartCountLabel = SwingUIConstants.createBodyLabel("Cart: 0 items");
         cartCountLabel.setForeground(SwingUIConstants.PRIMARY_COLOR);
         
@@ -96,10 +96,10 @@ public class SwingStorePanel extends JPanel {
         ));
         
         // Action buttons
-        refreshButton = SwingUIConstants.createSecondaryButton("🔄 Refresh");
-        cartButton = SwingUIConstants.createPrimaryButton("🛒 View Cart");
-        ordersButton = SwingUIConstants.createSecondaryButton("📋 Order History");
-        logoutButton = SwingUIConstants.createDangerButton("🚪 Logout");
+        refreshButton = SwingUIConstants.createSecondaryButton("Refresh");
+        cartButton = SwingUIConstants.createPrimaryButton("View Cart");
+        ordersButton = SwingUIConstants.createSecondaryButton("Order History");
+        logoutButton = SwingUIConstants.createDangerButton("Logout");
     }
     
     private void layoutComponents() {
@@ -314,7 +314,7 @@ public class SwingStorePanel extends JPanel {
         infoPanel.add(stockLabel);
         
         if (product.isCustomizable()) {
-            JLabel customLabel = SwingUIConstants.createSecondaryLabel("✨ Customizable");
+            JLabel customLabel = SwingUIConstants.createSecondaryLabel("Customizable");
             customLabel.setForeground(SwingUIConstants.SUCCESS_COLOR);
             customLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             infoPanel.add(customLabel);

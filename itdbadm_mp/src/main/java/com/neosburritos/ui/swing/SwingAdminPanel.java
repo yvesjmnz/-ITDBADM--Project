@@ -148,7 +148,7 @@ public class SwingAdminPanel extends JPanel {
         titlePanel.add(welcomeLabel, BorderLayout.CENTER);
         
         // Admin badge
-        JLabel adminBadge = SwingUIConstants.createBodyLabel("🛡️ ADMIN ACCESS");
+        JLabel adminBadge = SwingUIConstants.createBodyLabel("ADMIN ACCESS");
         adminBadge.setForeground(Color.WHITE);
         adminBadge.setFont(SwingUIConstants.SMALL_FONT);
         titlePanel.add(adminBadge, BorderLayout.EAST);
@@ -368,7 +368,7 @@ public class SwingAdminPanel extends JPanel {
         Order fullOrder = orderDAO.getOrderById(order.getOrderId());
         
         if (fullOrder == null) {
-            orderDetailsArea.setText("❌ Error loading order details\n\nPlease try refreshing or check the database connection.");
+            orderDetailsArea.setText("Error loading order details\n\nPlease try refreshing or check the database connection.");
             return;
         }
         
@@ -380,7 +380,7 @@ public class SwingAdminPanel extends JPanel {
         details.append("═══════════════════════════════════════\n\n");
         
         // Basic information
-        details.append("📋 BASIC INFORMATION\n");
+        details.append("BASIC INFORMATION\n");
         details.append("─────────────────────\n");
         details.append("Customer ID: ").append(fullOrder.getUserId()).append("\n");
         details.append("Order Date: ").append(formatDateTime(fullOrder.getOrderDate())).append("\n");
@@ -389,7 +389,7 @@ public class SwingAdminPanel extends JPanel {
         details.append("Item Count: ").append(fullOrder.getItemCount()).append("\n\n");
         
         // Delivery information
-        details.append("🚚 DELIVERY INFORMATION\n");
+        details.append("DELIVERY INFORMATION\n");
         details.append("─────────────────────\n");
         details.append("Address: ").append(fullOrder.getDeliveryAddress()).append("\n");
         if (fullOrder.getNotes() != null && !fullOrder.getNotes().trim().isEmpty()) {
@@ -398,7 +398,7 @@ public class SwingAdminPanel extends JPanel {
         details.append("\n");
         
         // Order items
-        details.append("🛍️ ORDER ITEMS\n");
+        details.append("ORDER ITEMS\n");
         details.append("─────────────────────\n");
         
         if (fullOrder.getItems() != null && !fullOrder.getItems().isEmpty()) {
@@ -417,7 +417,7 @@ public class SwingAdminPanel extends JPanel {
         }
         
         // Timeline
-        details.append("\n⏰ ORDER TIMELINE\n");
+        details.append("\nORDER TIMELINE\n");
         details.append("─────────────────────\n");
         details.append("Created: ").append(formatDateTime(fullOrder.getCreatedAt())).append("\n");
         if (fullOrder.getUpdatedAt() != null && !fullOrder.getUpdatedAt().equals(fullOrder.getCreatedAt())) {
@@ -435,12 +435,12 @@ public class SwingAdminPanel extends JPanel {
     
     private String formatStatus(Order.Status status) {
         switch (status) {
-            case PENDING: return "⏳ Pending";
-            case CONFIRMED: return "✅ Confirmed";
-            case PREPARING: return "👨‍🍳 Preparing";
-            case READY: return "📦 Ready";
-            case DELIVERED: return "🚚 Delivered";
-            case CANCELLED: return "❌ Cancelled";
+            case PENDING: return "Pending";
+            case CONFIRMED: return "Confirmed";
+            case PREPARING: return "Preparing";
+            case READY: return "Ready";
+            case DELIVERED: return "Delivered";
+            case CANCELLED: return "Cancelled";
             default: return status.toString();
         }
     }

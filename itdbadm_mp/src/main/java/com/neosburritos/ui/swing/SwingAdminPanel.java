@@ -40,6 +40,7 @@ public class SwingAdminPanel extends JPanel {
     
     public interface AdminListener {
         // Removed onBackToStore - admin stays in admin panel
+        void onManageProducts();
     }
     
     private final JFrame parentFrame;
@@ -484,8 +485,7 @@ public class SwingAdminPanel extends JPanel {
     }
     
     private void handleViewProducts(ActionEvent e) {
-        SwingUIConstants.showWarningDialog(this, 
-            "Product management feature coming soon!", "Feature Not Available");
+        adminListener.onManageProducts();
     }
     
     private void handleSystemStats(ActionEvent e) {

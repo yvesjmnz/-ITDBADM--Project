@@ -25,7 +25,6 @@ public class SwingProductPanel extends JPanel {
     private JComboBox<String> currencyCombo;
 
     private JButton addButton;
-    private JButton updateButton;
     private JButton clearButton;
     private JButton saveButton;
     private JButton backButton;
@@ -51,7 +50,7 @@ public class SwingProductPanel extends JPanel {
         // Button panel at the top
         JPanel topButtonPanel = new JPanel(new BorderLayout());
         backButton = new JButton("Back to Admin");
-        saveButton = new JButton("Save Changes");
+        saveButton = new JButton("Update Product");
         backButton.addActionListener(e -> listener.onBackToAdmin());
         saveButton.addActionListener(this::handleSave);
         topButtonPanel.add(backButton, BorderLayout.WEST);
@@ -127,15 +126,12 @@ public class SwingProductPanel extends JPanel {
         // Button panel at bottom for actions
         JPanel buttonPanel = new JPanel();
         addButton = new JButton("Add Product");
-        updateButton = new JButton("Update Product");
         clearButton = new JButton("Clear Form");
 
         addButton.addActionListener(this::handleAdd);
-        updateButton.addActionListener(this::handleUpdate);
         clearButton.addActionListener(e -> clearForm());
 
         buttonPanel.add(addButton);
-        buttonPanel.add(updateButton);
         buttonPanel.add(clearButton);
 
         add(buttonPanel, BorderLayout.SOUTH);
@@ -203,10 +199,23 @@ public class SwingProductPanel extends JPanel {
 
     private void handleSave(ActionEvent e) {
         if (selectedProductId < 0) {
-            JOptionPane.showMessageDialog(this, "No product selected to save.");
+            JOptionPane.showMessageDialog(this, "Please select a product to update.");
             return;
         }
 
+        // First time clicking 'Save Changes' just enables the form
+        if (!nameField.isEnabled()) {
+            nameField.setEnabled(true);
+            descriptionArea.setEnabled(true);
+            priceField.setEnabled(true);
+            categoryCombo.setEnabled(true);
+            stockField.setEnabled(true);
+            customizableCheck.setEnabled(true);
+            activeCheck.setEnabled(true);
+            return;
+        }
+
+        // Second time actually performs the save
         try {
             String name = nameField.getText();
             String desc = descriptionArea.getText();
@@ -225,6 +234,7 @@ public class SwingProductPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Error saving product: " + ex.getMessage());
         }
     }
+
 
     private void clearForm() {
         selectedProductId = -1;

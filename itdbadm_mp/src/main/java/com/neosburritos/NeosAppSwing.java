@@ -134,8 +134,8 @@
             add(mainPanel, BorderLayout.CENTER);
             
             // Show login panel initially
-            // REVERT BACK TO cardLayout.show(mainPanel, "LOGIN");
-            cardLayout.show(mainPanel, "PRODUCTS");
+            cardLayout.show(mainPanel, "LOGIN");
+            // cardLayout.show(mainPanel, "PRODUCTS");
 
         }
         

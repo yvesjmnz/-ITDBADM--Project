@@ -1,6 +1,7 @@
 package com.neosburritos.dao;
 
 import com.neosburritos.model.CartItem;
+import com.neosburritos.util.DatabaseConnection;
 import com.neosburritos.util.DatabaseConnectionManager;
 
 import java.sql.*;
@@ -144,6 +145,19 @@ public class CartDAO {
         }
     }
     
+        public boolean updateCartItemCustomization(int cartId, String newCustomization) {
+        String sql = "UPDATE cart SET customization = ? WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, newCustomization);
+            stmt.setInt(2, cartId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     /**
      * Get cart total for a user in specified currency
      */

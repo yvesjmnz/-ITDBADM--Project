@@ -44,6 +44,8 @@ public class SwingCartPanel extends JPanel {
     private JButton checkoutButton;
     private JButton clearCartButton;
     private JButton refreshButton;
+    private JButton deleteItemButton;
+    private JButton editItemButton;
     
     public SwingCartPanel(JFrame parentFrame, CartDAO cartDAO, CartListener cartListener) {
         this.parentFrame = parentFrame;
@@ -105,6 +107,8 @@ public class SwingCartPanel extends JPanel {
         checkoutButton = SwingUIConstants.createPrimaryButton("Proceed to Checkout");
         clearCartButton = SwingUIConstants.createDangerButton("Clear Cart");
         refreshButton = SwingUIConstants.createSecondaryButton("Refresh");
+        editItemButton = SwingUIConstants.createSecondaryButton("Edit Item");
+        deleteItemButton = SwingUIConstants.createDangerButton("Remove Item");
     }
     
     private void layoutComponents() {
@@ -172,6 +176,8 @@ public class SwingCartPanel extends JPanel {
         actionPanel.setOpaque(false);
         actionPanel.add(refreshButton);
         actionPanel.add(clearCartButton);
+        actionPanel.add(editItemButton);
+        actionPanel.add(deleteItemButton);
         
         mainPanel.add(actionPanel, BorderLayout.SOUTH);
         
@@ -213,6 +219,8 @@ public class SwingCartPanel extends JPanel {
         // Action buttons
         clearCartButton.addActionListener(this::handleClearCart);
         refreshButton.addActionListener(e -> refreshCart());
+        editItemButton.addActionListener(e -> handleEditSelectedItem());
+        deleteItemButton.addActionListener(e -> handleDeleteSelectedItem());
     }
     
     private void handleClearCart(ActionEvent e) {
@@ -313,6 +321,66 @@ public class SwingCartPanel extends JPanel {
             worker.execute();
         }
     }
+
+    private void handleEditSelectedItem() {
+    int selectedRow = cartTable.getSelectedRow();
+    if (selectedRow == -1) {
+        SwingUIConstants.showWarningDialog(parentFrame, "Please select an item to edit.", "No Selection");
+        return;
+    }
+
+    CartItem item = cartItems.get(selectedRow);
+    String currentCustomization = item.getCustomizations() != null ? item.getCustomizations() : "";
+
+    String newCustomization = JOptionPane.showInputDialog(parentFrame,
+            "Edit customizations for " + item.getProductName() + ":", currentCustomization);
+
+    if (newCustomization != null) {
+        SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
+            @Override
+            protected Boolean doInBackground() {
+                return cartDAO.updateCartItemCustomization(item.getCartId(), newCustomization);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    if (get()) {
+                        SwingUIConstants.showSuccessDialog(parentFrame,
+                                "Customization updated!", "Success");
+                        refreshCart();
+                        cartListener.onCartUpdated();
+                    } else {
+                        SwingUIConstants.showErrorDialog(parentFrame,
+                                "Failed to update item.", "Error");
+                    }
+                } catch (Exception ex) {
+                    SwingUIConstants.showErrorDialog(parentFrame,
+                            "Error updating item: " + ex.getMessage(), "Error");
+                }
+            }
+        };
+        worker.execute();
+    }
+
+    private void handleDeleteSelectedItem() {
+        int selectedRow = cartTable.getSelectedRow();
+        if (selectedRow == -1) {
+            SwingUIConstants.showWarningDialog(parentFrame, "Please select an item to delete.", "No Selection");
+            return;
+        }
+
+        CartItem item = cartItems.get(selectedRow);
+
+        boolean confirmed = SwingUIConstants.showConfirmDialog(parentFrame,
+                "Are you sure you want to delete " + item.getProductName() + " from the cart?",
+                "Confirm Deletion");
+
+        if (confirmed) {
+            handleRemoveItem(item.getCartId(), item.getProductName());
+        }
+    }
+
     
     public void setCurrentUser(User user, String currency) {
         this.currentUser = user;

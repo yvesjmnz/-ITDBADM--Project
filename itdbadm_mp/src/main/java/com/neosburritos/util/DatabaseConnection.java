@@ -13,7 +13,7 @@ public class DatabaseConnection {
     
     private static final String URL = "jdbc:mysql://localhost:3306/neos_burritos";
     private static final String USERNAME = "root";
-    private static final String PASSWORD = "12345"; // Default XAMPP password
+    private static final String PASSWORD = "1234"; // Default XAMPP password
     
     private static DatabaseConnection instance;
     private Connection connection;

@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Data Access Object for Product operations
- * Demonstrates stored procedure calls for product management and currency conversion
+ * Enhanced Data Access Object for Product operations
+ * Includes full CRUD operations for admin management
  */
 public class ProductDAO {
 
@@ -59,6 +59,89 @@ public class ProductDAO {
         }
         
         return products;
+    }
+
+    /**
+     * Get all products for admin management
+     */
+    public List<Product> getAllProducts() {
+        String sql = "SELECT p.product_id, p.name, p.description, p.base_price, p.stock_quantity, " +
+                    "p.category, p.is_customizable, p.is_active, p.created_at, " +
+                    "c.currency_code, c.symbol " +
+                    "FROM products p " +
+                    "JOIN currencies c ON p.currency_id = c.currency_id " +
+                    "ORDER BY p.created_at DESC";
+        List<Product> products = new ArrayList<>();
+        
+        try (Connection connection = DatabaseConnectionManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                Product product = new Product();
+                product.setProductId(rs.getInt("product_id"));
+                product.setName(rs.getString("name"));
+                product.setDescription(rs.getString("description"));
+                product.setBasePrice(rs.getBigDecimal("base_price"));
+                product.setStockQuantity(rs.getInt("stock_quantity"));
+                product.setCategory(Product.Category.valueOf(rs.getString("category")));
+                product.setCustomizable(rs.getBoolean("is_customizable"));
+                product.setActive(rs.getBoolean("is_active"));
+                product.setCurrencyCode(rs.getString("currency_code"));
+                product.setCurrencySymbol(rs.getString("symbol"));
+                product.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                products.add(product);
+            }
+            
+            System.out.println("Retrieved " + products.size() + " products for admin management");
+            return products;
+            
+        } catch (SQLException e) {
+            System.err.println("Error retrieving all products: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Get product by ID
+     */
+    public Product getProductById(int productId) {
+        String sql = "SELECT p.product_id, p.name, p.description, p.base_price, p.stock_quantity, " +
+                    "p.category, p.is_customizable, p.is_active, p.created_at, " +
+                    "c.currency_code, c.symbol " +
+                    "FROM products p " +
+                    "JOIN currencies c ON p.currency_id = c.currency_id " +
+                    "WHERE p.product_id = ?";
+        
+        try (Connection connection = DatabaseConnectionManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+            
+            stmt.setInt(1, productId);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Product product = new Product();
+                    product.setProductId(rs.getInt("product_id"));
+                    product.setName(rs.getString("name"));
+                    product.setDescription(rs.getString("description"));
+                    product.setBasePrice(rs.getBigDecimal("base_price"));
+                    product.setStockQuantity(rs.getInt("stock_quantity"));
+                    product.setCategory(Product.Category.valueOf(rs.getString("category")));
+                    product.setCustomizable(rs.getBoolean("is_customizable"));
+                    product.setActive(rs.getBoolean("is_active"));
+                    product.setCurrencyCode(rs.getString("currency_code"));
+                    product.setCurrencySymbol(rs.getString("symbol"));
+                    product.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                    return product;
+                }
+            }
+            
+            return null;
+            
+        } catch (SQLException e) {
+            System.err.println("Error retrieving product by ID: " + productId + " - " + e.getMessage());
+            return null;
+        }
     }
 
     /**

@@ -21,8 +21,9 @@ import com.neosburritos.ui.swing.SwingAdminPanel;
 import com.neosburritos.ui.swing.SwingCartPanel;
 import com.neosburritos.ui.swing.SwingCheckoutPanel;
 import com.neosburritos.ui.swing.SwingLoginPanel;
-import com.neosburritos.ui.swing.SwingRegisterPanel;
 import com.neosburritos.ui.swing.SwingOrderHistoryPanel;
+import com.neosburritos.ui.swing.SwingRegisterPanel;
+import com.neosburritos.ui.swing.SwingStaffPanel;
 import com.neosburritos.ui.swing.SwingStorePanel;
 import com.neosburritos.ui.swing.SwingUIConstants;
 import com.neosburritos.util.DatabaseConnection;
@@ -39,7 +40,8 @@ public class NeosAppSwing extends JFrame implements
     SwingCartPanel.CartListener,
     SwingCheckoutPanel.CheckoutListener,
     SwingOrderHistoryPanel.OrderHistoryListener,
-    SwingAdminPanel.AdminListener {
+    SwingAdminPanel.AdminListener,
+    SwingStaffPanel.StaffListener {
     
     // DAOs and Services
     private final UserDAO userDAO;
@@ -62,6 +64,7 @@ public class NeosAppSwing extends JFrame implements
     private SwingCheckoutPanel checkoutPanel;
     private SwingOrderHistoryPanel orderHistoryPanel;
     private SwingAdminPanel adminPanel;
+    private SwingStaffPanel staffPanel;
     
     public NeosAppSwing() {
         super("Neo's Burritos - Modern Online Store");
@@ -126,6 +129,7 @@ public class NeosAppSwing extends JFrame implements
         mainPanel.add(checkoutPanel, "CHECKOUT");
         mainPanel.add(orderHistoryPanel, "ORDERS");
         mainPanel.add(adminPanel, "ADMIN");
+        mainPanel.add(staffPanel, "STAFF");
         
         add(mainPanel, BorderLayout.CENTER);
         
@@ -142,6 +146,7 @@ public class NeosAppSwing extends JFrame implements
         checkoutPanel = new SwingCheckoutPanel(this, orderDAO, cartDAO, paymentService, this);
         orderHistoryPanel = new SwingOrderHistoryPanel(this, orderDAO, this);
         adminPanel = new SwingAdminPanel(this, orderDAO, productDAO, userDAO, this);
+        staffPanel = new SwingStaffPanel(this, orderDAO, productDAO, this);
     }
     
     private void setupEventHandlers() {
@@ -184,6 +189,9 @@ public class NeosAppSwing extends JFrame implements
         if (user.getRole() == User.Role.ADMIN) {
             adminPanel.setCurrentUser(user);
             cardLayout.show(mainPanel, "ADMIN");
+        } else if (user.getRole() == User.Role.STAFF) {
+            staffPanel.setCurrentUser(user);
+            cardLayout.show(mainPanel, "STAFF");
         } else {
             cardLayout.show(mainPanel, "STORE");
         }
@@ -227,11 +235,6 @@ public class NeosAppSwing extends JFrame implements
     public void onViewOrderHistory() {
         orderHistoryPanel.refreshOrders();
         cardLayout.show(mainPanel, "ORDERS");
-    }
-    
-    @Override
-    public void onLogout() {
-        handleLogout();
     }
     
     @Override
@@ -297,13 +300,12 @@ public class NeosAppSwing extends JFrame implements
         cardLayout.show(mainPanel, "STORE");
     }
     
-    // // AdminPanel.AdminListener implementation
-    // @Override
-    // public void onBackToStore() {
-    //     storePanel.refreshData();
-    //     cardLayout.show(mainPanel, "STORE");
-    // }
-
+    // AdminPanel.AdminListener implementation
+    @Override
+    public void onLogout() {
+        handleLogout();
+    }
+    
     private void handleLogout() {
         currentUser = null;
         loginPanel.clearForm();

@@ -27,26 +27,24 @@ import javax.swing.border.TitledBorder;
 
 import com.neosburritos.dao.OrderDAO;
 import com.neosburritos.dao.ProductDAO;
-import com.neosburritos.dao.UserDAO;
 import com.neosburritos.model.Order;
 import com.neosburritos.model.OrderItem;
 import com.neosburritos.model.User;
 
 /**
- * Enhanced Admin panel with logout and product management
- * Single responsibility: Administrative functions only
+ * Staff panel for managing orders and viewing products
+ * Single responsibility: Staff-level operations (no user management)
  */
-public class SwingAdminPanel extends JPanel {
+public class SwingStaffPanel extends JPanel {
     
-    public interface AdminListener {
+    public interface StaffListener {
         void onLogout();
     }
     
     private final JFrame parentFrame;
     private final OrderDAO orderDAO;
     private final ProductDAO productDAO;
-    private final UserDAO userDAO;
-    private final AdminListener adminListener;
+    private final StaffListener staffListener;
     
     // Current state
     private User currentUser;
@@ -67,17 +65,15 @@ public class SwingAdminPanel extends JPanel {
     private JButton refreshOrdersButton;
     
     // Quick Actions Section
-    private JButton viewAllUsersButton;
     private JButton viewProductsButton;
     private JButton systemStatsButton;
     
-    public SwingAdminPanel(JFrame parentFrame, OrderDAO orderDAO, ProductDAO productDAO, 
-                          UserDAO userDAO, AdminListener adminListener) {
+    public SwingStaffPanel(JFrame parentFrame, OrderDAO orderDAO, ProductDAO productDAO, 
+                          StaffListener staffListener) {
         this.parentFrame = parentFrame;
         this.orderDAO = orderDAO;
         this.productDAO = productDAO;
-        this.userDAO = userDAO;
-        this.adminListener = adminListener;
+        this.staffListener = staffListener;
         
         initializeComponents();
         layoutComponents();
@@ -88,7 +84,7 @@ public class SwingAdminPanel extends JPanel {
         setBackground(SwingUIConstants.BACKGROUND_COLOR);
         
         // Header components
-        welcomeLabel = SwingUIConstants.createTitleLabel("Admin Dashboard");
+        welcomeLabel = SwingUIConstants.createTitleLabel("Staff Dashboard");
         statsLabel = SwingUIConstants.createBodyLabel("Loading system statistics...");
         logoutButton = SwingUIConstants.createDangerButton("Logout");
         logoutButton.setPreferredSize(new Dimension(100, 36));
@@ -113,10 +109,9 @@ public class SwingAdminPanel extends JPanel {
         
         refreshOrdersButton = SwingUIConstants.createSecondaryButton("Refresh Orders");
         
-        // Quick action buttons
-        viewAllUsersButton = SwingUIConstants.createSecondaryButton("View All Users");
-        viewProductsButton = SwingUIConstants.createSecondaryButton("Manage Products");
-        systemStatsButton = SwingUIConstants.createSecondaryButton("System Statistics");
+        // Quick action buttons (no user management for staff)
+        viewProductsButton = SwingUIConstants.createSecondaryButton("View Products");
+        systemStatsButton = SwingUIConstants.createSecondaryButton("Order Statistics");
     }
     
     private void layoutComponents() {
@@ -136,28 +131,28 @@ public class SwingAdminPanel extends JPanel {
     }
     
     private JPanel createHeaderPanel() {
-        JPanel headerPanel = SwingUIConstants.createStyledPanel(SwingUIConstants.PRIMARY_COLOR);
+        JPanel headerPanel = SwingUIConstants.createStyledPanel(SwingUIConstants.SECONDARY_COLOR);
         headerPanel.setLayout(new BorderLayout(SwingUIConstants.PADDING_MEDIUM, SwingUIConstants.PADDING_MEDIUM));
         headerPanel.setBorder(BorderFactory.createEmptyBorder(
             SwingUIConstants.PADDING_LARGE, SwingUIConstants.PADDING_LARGE,
             SwingUIConstants.PADDING_LARGE, SwingUIConstants.PADDING_LARGE
         ));
         
-        // Title and admin badge with logout button
+        // Title and staff badge with logout button
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setOpaque(false);
         
         welcomeLabel.setForeground(Color.WHITE);
         titlePanel.add(welcomeLabel, BorderLayout.CENTER);
         
-        // Right side with admin badge and logout
+        // Right side with staff badge and logout
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, SwingUIConstants.PADDING_SMALL, 0));
         rightPanel.setOpaque(false);
         
-        JLabel adminBadge = SwingUIConstants.createBodyLabel("ADMIN ACCESS");
-        adminBadge.setForeground(Color.WHITE);
-        adminBadge.setFont(SwingUIConstants.SMALL_FONT);
-        rightPanel.add(adminBadge);
+        JLabel staffBadge = SwingUIConstants.createBodyLabel("STAFF ACCESS");
+        staffBadge.setForeground(Color.WHITE);
+        staffBadge.setFont(SwingUIConstants.SMALL_FONT);
+        rightPanel.add(staffBadge);
         rightPanel.add(logoutButton);
         
         titlePanel.add(rightPanel, BorderLayout.EAST);
@@ -199,14 +194,11 @@ public class SwingAdminPanel extends JPanel {
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setOpaque(false);
         
-        // Add buttons with spacing
-        contentPanel.add(createActionButton(viewAllUsersButton, "View and manage all users"));
+        // Add buttons with spacing (no user management for staff)
+        contentPanel.add(createActionButton(viewProductsButton, "View product inventory"));
         contentPanel.add(Box.createVerticalStrut(SwingUIConstants.PADDING_MEDIUM));
         
-        contentPanel.add(createActionButton(viewProductsButton, "Manage product inventory"));
-        contentPanel.add(Box.createVerticalStrut(SwingUIConstants.PADDING_MEDIUM));
-        
-        contentPanel.add(createActionButton(systemStatsButton, "View detailed statistics"));
+        contentPanel.add(createActionButton(systemStatsButton, "View order statistics"));
         contentPanel.add(Box.createVerticalGlue());
         
         panel.add(contentPanel, BorderLayout.CENTER);
@@ -347,7 +339,7 @@ public class SwingAdminPanel extends JPanel {
         footerPanel.setBackground(SwingUIConstants.BACKGROUND_COLOR);
         
         JLabel footerLabel = SwingUIConstants.createSecondaryLabel(
-            "Neo's Burritos Admin Panel - Manage orders, users, and system settings"
+            "Neo's Burritos Staff Panel - Manage orders and view inventory"
         );
         footerPanel.add(footerLabel);
         
@@ -368,7 +360,6 @@ public class SwingAdminPanel extends JPanel {
         logoutButton.addActionListener(this::handleLogout);
         
         // Quick action buttons
-        viewAllUsersButton.addActionListener(this::handleViewUsers);
         viewProductsButton.addActionListener(this::handleViewProducts);
         systemStatsButton.addActionListener(this::handleSystemStats);
     }
@@ -507,29 +498,61 @@ public class SwingAdminPanel extends JPanel {
         boolean confirmed = SwingUIConstants.showConfirmDialog(this,
             "Are you sure you want to logout?", "Confirm Logout");
         
-        if (confirmed && adminListener != null) {
-            adminListener.onLogout();
+        if (confirmed && staffListener != null) {
+            staffListener.onLogout();
         }
     }
     
-    private void handleViewUsers(ActionEvent e) {
-        UserManagementDialog dialog = new UserManagementDialog(parentFrame, userDAO);
-        dialog.setVisible(true);
-    }
-    
     private void handleViewProducts(ActionEvent e) {
-        ProductManagementDialog dialog = new ProductManagementDialog(parentFrame, productDAO);
+        // Staff can only view products, not edit them
+        ProductViewDialog dialog = new ProductViewDialog(parentFrame, productDAO);
         dialog.setVisible(true);
     }
     
     private void handleSystemStats(ActionEvent e) {
-        SwingUIConstants.showWarningDialog(this, 
-            "Detailed statistics feature coming soon!", "Feature Not Available");
+        // Show order statistics for staff
+        showOrderStatistics();
+    }
+    
+    private void showOrderStatistics() {
+        if (allOrders == null || allOrders.isEmpty()) {
+            SwingUIConstants.showInfoDialog(this, 
+                "No orders available for statistics.", "Order Statistics");
+            return;
+        }
+        
+        int totalOrders = allOrders.size();
+        long pendingOrders = allOrders.stream()
+                .mapToLong(order -> order.getStatus() == Order.Status.PENDING ? 1 : 0)
+                .sum();
+        long completedOrders = allOrders.stream()
+                .mapToLong(order -> order.getStatus() == Order.Status.COMPLETED ? 1 : 0)
+                .sum();
+        long activeOrders = allOrders.stream()
+                .mapToLong(order -> order.getStatus() == Order.Status.CONFIRMED ? 1 : 0)
+                .sum();
+        long cancelledOrders = allOrders.stream()
+                .mapToLong(order -> order.getStatus() == Order.Status.CANCELLED ? 1 : 0)
+                .sum();
+        
+        String message = String.format(
+            "Order Statistics:\n\n" +
+            "Total Orders: %d\n" +
+            "Pending Orders: %d\n" +
+            "Active Orders: %d\n" +
+            "Completed Orders: %d\n" +
+            "Cancelled Orders: %d\n\n" +
+            "Completion Rate: %.1f%%",
+            totalOrders, pendingOrders, activeOrders, completedOrders, cancelledOrders,
+            totalOrders > 0 ? (completedOrders * 100.0 / totalOrders) : 0.0
+        );
+        
+        SwingUIConstants.showInfoDialog(this, message, "Order Statistics");
     }
     
     public void setCurrentUser(User user) {
         this.currentUser = user;
-        welcomeLabel.setText("Welcome, " + user.getName() + " (Administrator)");
+        welcomeLabel.setText("Welcome, " + user.getName() + " (Staff)");
         refreshOrders();
         updateStats();
     }
@@ -560,7 +583,7 @@ public class SwingAdminPanel extends JPanel {
         statusComboBox.setEnabled(false);
         updateStatusButton.setEnabled(false);
         
-        System.out.println("Admin: Refreshed orders - " + allOrders.size() + " total orders");
+        System.out.println("Staff: Refreshed orders - " + allOrders.size() + " total orders");
     }
     
     private void updateStats() {
@@ -579,12 +602,9 @@ public class SwingAdminPanel extends JPanel {
         long activeOrders = allOrders.stream()
                 .mapToLong(order -> order.getStatus() == Order.Status.CONFIRMED ? 1 : 0)
                 .sum();
-        long cancelledOrders = allOrders.stream()
-                .mapToLong(order -> order.getStatus() == Order.Status.CANCELLED ? 1 : 0)
-                .sum();
         
         statsLabel.setText(String.format(
-            "System Overview: %d Total Orders | %d Pending | %d Active | %d Completed | %d Cancelled", 
-            totalOrders, pendingOrders, activeOrders, completedOrders, cancelledOrders));
+            "Order Overview: %d Total | %d Pending | %d Active | %d Completed", 
+            totalOrders, pendingOrders, activeOrders, completedOrders));
     }
 }

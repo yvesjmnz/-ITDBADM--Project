@@ -39,7 +39,8 @@ import com.neosburritos.model.User;
 public class SwingAdminPanel extends JPanel {
     
     public interface AdminListener {
-        void onLogout();
+        // Removed onBackToStore - admin stays in admin panel
+        void onManageProducts();
     }
     
     private final JFrame parentFrame;
@@ -518,8 +519,7 @@ public class SwingAdminPanel extends JPanel {
     }
     
     private void handleViewProducts(ActionEvent e) {
-        ProductManagementDialog dialog = new ProductManagementDialog(parentFrame, productDAO);
-        dialog.setVisible(true);
+        adminListener.onManageProducts();
     }
     
     private void handleSystemStats(ActionEvent e) {

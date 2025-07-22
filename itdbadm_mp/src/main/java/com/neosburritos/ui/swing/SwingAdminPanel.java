@@ -284,12 +284,29 @@ public class SwingAdminPanel extends JPanel {
             SwingUIConstants.TEXT_SECONDARY
         ));
         
-        JPanel controlsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        // Use BoxLayout for better vertical spacing
+        JPanel controlsPanel = new JPanel();
+        controlsPanel.setLayout(new BoxLayout(controlsPanel, BoxLayout.Y_AXIS));
         controlsPanel.setOpaque(false);
+        controlsPanel.setBorder(BorderFactory.createEmptyBorder(
+            SwingUIConstants.PADDING_SMALL, SwingUIConstants.PADDING_SMALL,
+            SwingUIConstants.PADDING_SMALL, SwingUIConstants.PADDING_SMALL
+        ));
         
-        controlsPanel.add(SwingUIConstants.createBodyLabel("New Status:"));
-        controlsPanel.add(statusComboBox);
-        controlsPanel.add(updateStatusButton);
+        // Status selection row
+        JPanel statusRow = new JPanel(new FlowLayout(FlowLayout.LEFT, SwingUIConstants.PADDING_SMALL, 0));
+        statusRow.setOpaque(false);
+        statusRow.add(SwingUIConstants.createBodyLabel("New Status:"));
+        statusRow.add(statusComboBox);
+        
+        // Button row
+        JPanel buttonRow = new JPanel(new FlowLayout(FlowLayout.LEFT, SwingUIConstants.PADDING_SMALL, 0));
+        buttonRow.setOpaque(false);
+        buttonRow.add(updateStatusButton);
+        
+        controlsPanel.add(statusRow);
+        controlsPanel.add(Box.createVerticalStrut(SwingUIConstants.PADDING_SMALL));
+        controlsPanel.add(buttonRow);
         
         panel.add(controlsPanel, BorderLayout.CENTER);
         return panel;
@@ -437,9 +454,7 @@ public class SwingAdminPanel extends JPanel {
         switch (status) {
             case PENDING: return "Pending";
             case CONFIRMED: return "Confirmed";
-            case PREPARING: return "Preparing";
-            case READY: return "Ready";
-            case DELIVERED: return "Delivered";
+            case COMPLETED: return "Completed";
             case CANCELLED: return "Cancelled";
             default: return status.toString();
         }
@@ -479,8 +494,8 @@ public class SwingAdminPanel extends JPanel {
     }
     
     private void handleViewUsers(ActionEvent e) {
-        SwingUIConstants.showWarningDialog(this, 
-            "User management feature coming soon!", "Feature Not Available");
+        UserManagementDialog dialog = new UserManagementDialog(parentFrame, userDAO);
+        dialog.setVisible(true);
     }
     
     private void handleViewProducts(ActionEvent e) {
@@ -540,16 +555,17 @@ public class SwingAdminPanel extends JPanel {
                 .mapToLong(order -> order.getStatus() == Order.Status.PENDING ? 1 : 0)
                 .sum();
         long completedOrders = allOrders.stream()
-                .mapToLong(order -> order.getStatus() == Order.Status.DELIVERED ? 1 : 0)
+                .mapToLong(order -> order.getStatus() == Order.Status.COMPLETED ? 1 : 0)
                 .sum();
         long activeOrders = allOrders.stream()
-                .mapToLong(order -> order.getStatus() == Order.Status.CONFIRMED || 
-                                   order.getStatus() == Order.Status.PREPARING || 
-                                   order.getStatus() == Order.Status.READY ? 1 : 0)
+                .mapToLong(order -> order.getStatus() == Order.Status.CONFIRMED ? 1 : 0)
+                .sum();
+        long cancelledOrders = allOrders.stream()
+                .mapToLong(order -> order.getStatus() == Order.Status.CANCELLED ? 1 : 0)
                 .sum();
         
         statsLabel.setText(String.format(
-            "📊 System Overview: %d Total Orders | %d Pending | %d Active | %d Completed", 
-            totalOrders, pendingOrders, activeOrders, completedOrders));
+            "System Overview: %d Total Orders | %d Pending | %d Active | %d Completed | %d Cancelled", 
+            totalOrders, pendingOrders, activeOrders, completedOrders, cancelledOrders));
     }
 }

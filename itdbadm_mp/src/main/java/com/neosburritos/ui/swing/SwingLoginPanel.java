@@ -10,7 +10,7 @@ import java.awt.event.KeyEvent;
 
 /**
  * Modern Swing-based Login Panel
- * Clean, simple login interface
+ * Clean, simple login interface with improved text field sizing
  */
 public class SwingLoginPanel extends JPanel {
     
@@ -44,17 +44,30 @@ public class SwingLoginPanel extends JPanel {
     private void initializeComponents() {
         setBackground(SwingUIConstants.BACKGROUND_COLOR);
         
-        // Input fields
+        // Input fields with improved height to prevent text cutoff
         emailField = SwingUIConstants.createStyledTextField(20);
-        emailField.setPreferredSize(SwingUIConstants.LARGE_TEXT_FIELD_SIZE);
-        
-        passwordField = new JPasswordField(20);
-        passwordField.setFont(SwingUIConstants.BODY_FONT);
-        passwordField.setPreferredSize(SwingUIConstants.LARGE_TEXT_FIELD_SIZE);
-        passwordField.setBorder(BorderFactory.createCompoundBorder(
+        Dimension improvedTextFieldSize = new Dimension(300, 50);
+        emailField.setPreferredSize(improvedTextFieldSize);
+        emailField.setMinimumSize(improvedTextFieldSize);
+        emailField.setMaximumSize(improvedTextFieldSize);
+        // Enhanced border with better padding for text visibility
+        emailField.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(SwingUIConstants.BORDER_COLOR, 1),
             BorderFactory.createEmptyBorder(SwingUIConstants.PADDING_SMALL, SwingUIConstants.PADDING_SMALL, 
                                           SwingUIConstants.PADDING_SMALL, SwingUIConstants.PADDING_SMALL)
+        ));
+        
+        passwordField = new JPasswordField(20);
+        passwordField.setFont(SwingUIConstants.BODY_FONT);
+        passwordField.setPreferredSize(improvedTextFieldSize);
+        passwordField.setMinimumSize(improvedTextFieldSize);
+        passwordField.setMaximumSize(improvedTextFieldSize);
+        passwordField.setBackground(SwingUIConstants.SURFACE_COLOR);
+        passwordField.setForeground(SwingUIConstants.TEXT_PRIMARY);
+        passwordField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(SwingUIConstants.BORDER_COLOR, 1),
+            BorderFactory.createEmptyBorder(SwingUIConstants.PADDING_MEDIUM, SwingUIConstants.PADDING_SMALL, 
+                                          SwingUIConstants.PADDING_MEDIUM, SwingUIConstants.PADDING_SMALL)
         ));
         
         // Buttons

@@ -228,83 +228,77 @@ public class SwingOrderHistoryPanel extends JPanel {
         Order fullOrder = orderDAO.getOrderById(order.getOrderId());
         
         if (fullOrder == null) {
-            orderDetailsArea.setText("Error loading order details\\n\\nPlease try refreshing or contact support if the problem persists.");
+            orderDetailsArea.setText("Error loading order details\n\nPlease try refreshing or contact support if the problem persists.");
             return;
         }
         
         StringBuilder details = new StringBuilder();
         
         // Order header with status indicator
-        details.append("═══════════════════════════════════════\\n");
-        details.append("           ORDER #").append(fullOrder.getOrderId()).append("\\n");
-        details.append("══════════════════════════════════════\\n\\n");
+        details.append("═══════════════════════════════════════\n");
+        details.append("           ORDER #").append(fullOrder.getOrderId()).append("\n");
+        details.append("══════════════════════════════════════\n\n");
         
         // Status with visual indicator
-        details.append("ORDER STATUS\\n");
-        details.append("─────────────────────\\n");
-        details.append("Current Status: ").append(formatStatusWithIcon(fullOrder.getStatus())).append("\\n");
-        details.append("Order Date: ").append(formatDateTime(fullOrder.getOrderDate())).append("\\n");
-        details.append("Total Amount: ").append(fullOrder.getFormattedTotal()).append("\\n\\n");
+        details.append("ORDER STATUS\n");
+        details.append("─────────────────────\n");
+        details.append("Current Status: ").append(formatStatusWithIcon(fullOrder.getStatus())).append("\n");
+        details.append("Order Date: ").append(formatDateTime(fullOrder.getOrderDate())).append("\n");
+        details.append("Total Amount: ").append(fullOrder.getFormattedTotal()).append("\n\n");
         
         // Delivery information
-        details.append("DELIVERY INFORMATION\\n");
-        details.append("─────────────────────\\n");
-        details.append("Delivery Address:\\n").append(fullOrder.getDeliveryAddress()).append("\\n");
+        details.append("DELIVERY INFORMATION\n");
+        details.append("─────────────────────\n");
+        details.append("Delivery Address:\n").append(fullOrder.getDeliveryAddress()).append("\n");
         if (fullOrder.getNotes() != null && !fullOrder.getNotes().trim().isEmpty()) {
-            details.append("\\nSpecial Instructions:\\n").append(fullOrder.getNotes()).append("\\n");
+            details.append("\nSpecial Instructions:\n").append(fullOrder.getNotes()).append("\n");
         }
-        details.append("\\n");
+        details.append("\n");
         
         // Order items with better formatting
-        details.append("YOUR ORDER\\n");
-        details.append("─────────────────────\\n");
+        details.append("YOUR ORDER\n");
+        details.append("─────────────────────\n");
         
         if (fullOrder.getItems() != null && !fullOrder.getItems().isEmpty()) {
             for (int i = 0; i < fullOrder.getItems().size(); i++) {
                 OrderItem item = fullOrder.getItems().get(i);
-                details.append(String.format("%d. %s\\n", i + 1, item.getProductName()));
-                details.append(String.format("   Quantity: %d\\n", item.getQuantity()));
-                details.append(String.format("   Price: %s%s\\n", 
+                details.append(String.format("%d. %s\n", i + 1, item.getProductName()));
+                details.append(String.format("   Quantity: %d\n", item.getQuantity()));
+                details.append(String.format("   Price: %s%s\n", 
                     fullOrder.getCurrencySymbol(), item.getTotalPrice().toString()));
                 
                 if (item.getCustomizations() != null && !item.getCustomizations().trim().isEmpty()) {
-                    details.append("   Customizations: ").append(item.getCustomizations()).append("\\n");
+                    details.append("   Customizations: ").append(item.getCustomizations()).append("\n");
                 }
-                details.append("\\n");
+                details.append("\n");
             }
         } else {
-            details.append("No items found for this order.\\n\\n");
+            details.append("No items found for this order.\n\n");
         }
         
         // Order timeline
-        details.append("ORDER TIMELINE\\n");
-        details.append("─────────────────────\\n");
-        details.append("Order Placed: ").append(formatDateTime(fullOrder.getCreatedAt())).append("\\n");
+        details.append("ORDER TIMELINE\n");
+        details.append("─────────────────────\n");
+        details.append("Order Placed: ").append(formatDateTime(fullOrder.getCreatedAt())).append("\n");
         if (fullOrder.getUpdatedAt() != null && !fullOrder.getUpdatedAt().equals(fullOrder.getCreatedAt())) {
-            details.append("Last Updated: ").append(formatDateTime(fullOrder.getUpdatedAt())).append("\\n");
+            details.append("Last Updated: ").append(formatDateTime(fullOrder.getUpdatedAt())).append("\n");
         }
         
         // Status-specific information
-        details.append("\\nWHAT'S NEXT?\\n");
-        details.append("─────────────────────\\n");
+        details.append("\nWHAT'S NEXT?\n");
+        details.append("─────────────────────\n");
         switch (fullOrder.getStatus()) {
             case PENDING:
-                details.append("Your order is being reviewed. You'll receive confirmation shortly.\\n");
+                details.append("Your order is being reviewed. You'll receive confirmation shortly.\n");
                 break;
             case CONFIRMED:
-                details.append("Your order has been confirmed and will begin preparation soon.\\n");
+                details.append("Your order has been confirmed and is being prepared.\n");
                 break;
-            case PREPARING:
-                details.append("Our kitchen is preparing your delicious order right now!\\n");
-                break;
-            case READY:
-                details.append("Your order is ready! It will be delivered to you soon.\\n");
-                break;
-            case DELIVERED:
-                details.append("Your order has been delivered. We hope you enjoyed it!\\n");
+            case COMPLETED:
+                details.append("Your order has been completed. We hope you enjoyed it!\n");
                 break;
             case CANCELLED:
-                details.append("This order was cancelled. If you have questions, please contact support.\\n");
+                details.append("This order was cancelled. If you have questions, please contact support.\n");
                 break;
         }
         
@@ -321,9 +315,7 @@ public class SwingOrderHistoryPanel extends JPanel {
         switch (status) {
             case PENDING: return "Pending Review";
             case CONFIRMED: return "Confirmed";
-            case PREPARING: return "Being Prepared";
-            case READY: return "Ready for Delivery";
-            case DELIVERED: return "Delivered";
+            case COMPLETED: return "Completed";
             case CANCELLED: return "Cancelled";
             default: return status.toString();
         }
@@ -344,11 +336,11 @@ public class SwingOrderHistoryPanel extends JPanel {
         
         if (currentOrders.isEmpty()) {
             orderListModel.addElement("No orders found");
-            orderDetailsArea.setText("Welcome to Neo's Burritos!\\n\\n" +
-                                   "You haven't placed any orders yet.\\n\\n" +
-                                   "Ready to try our delicious burritos?\\n" +
-                                   "Click 'Back to Store' to start shopping!\\n\\n" +
-                                   "Your order history will appear here once you\\n" +
+            orderDetailsArea.setText("Welcome to Neo's Burritos!\n\n" +
+                                   "You haven't placed any orders yet.\n\n" +
+                                   "Ready to try our delicious burritos?\n" +
+                                   "Click 'Back to Store' to start shopping!\n\n" +
+                                   "Your order history will appear here once you\n" +
                                    "place your first order.");
             summaryLabel.setText("No orders yet - Start shopping to see your history here!");
         } else {
@@ -363,16 +355,16 @@ public class SwingOrderHistoryPanel extends JPanel {
                 orderListModel.addElement(displayText);
             }
             
-            orderDetailsArea.setText("Select an order from the list to view detailed information\\n\\n" +
-                                   "You can see order status, delivery details, items ordered,\\n" +
+            orderDetailsArea.setText("Select an order from the list to view detailed information\n\n" +
+                                   "You can see order status, delivery details, items ordered,\n" +
                                    "and track your order progress here.");
             
-            // Update summary
+            // Update summary - Fixed to use COMPLETED instead of DELIVERED
             long completedOrders = currentOrders.stream()
-                    .mapToLong(order -> order.getStatus() == Order.Status.DELIVERED ? 1 : 0)
+                    .mapToLong(order -> order.getStatus() == Order.Status.COMPLETED ? 1 : 0)
                     .sum();
             long activeOrders = currentOrders.stream()
-                    .mapToLong(order -> order.getStatus() != Order.Status.DELIVERED && 
+                    .mapToLong(order -> order.getStatus() != Order.Status.COMPLETED && 
                                        order.getStatus() != Order.Status.CANCELLED ? 1 : 0)
                     .sum();
             
@@ -388,9 +380,7 @@ public class SwingOrderHistoryPanel extends JPanel {
         switch (status) {
             case PENDING: return "⏳";
             case CONFIRMED: return "✅";
-            case PREPARING: return "👨‍🍳";
-            case READY: return "📦";
-            case DELIVERED: return "🎉";
+            case COMPLETED: return "🎉";
             case CANCELLED: return "❌";
             default: return "📋";
         }

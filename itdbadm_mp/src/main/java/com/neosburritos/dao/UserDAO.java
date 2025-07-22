@@ -142,6 +142,133 @@ public class UserDAO {
         }
     }
 
+    /**
+     * Get all users for admin management
+     */
+    public java.util.List<User> getAllUsers() {
+        String sql = "SELECT user_id, name, email, role, phone, address, is_active, created_at FROM users ORDER BY created_at DESC";
+        java.util.List<User> users = new java.util.ArrayList<>();
+        
+        try (Connection connection = DatabaseConnectionManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                User user = new User();
+                user.setUserId(rs.getInt("user_id"));
+                user.setName(rs.getString("name"));
+                user.setEmail(rs.getString("email"));
+                user.setRole(User.Role.valueOf(rs.getString("role")));
+                user.setPhone(rs.getString("phone"));
+                user.setAddress(rs.getString("address"));
+                user.setActive(rs.getBoolean("is_active"));
+                user.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                users.add(user);
+            }
+            
+            System.out.println("Retrieved " + users.size() + " users");
+            return users;
+            
+        } catch (SQLException e) {
+            System.err.println("Error retrieving all users: " + e.getMessage());
+            return new java.util.ArrayList<>();
+        }
+    }
+
+    /**
+     * Update user status (active/inactive)
+     */
+    public UpdateResult updateUserStatus(int userId, boolean isActive) {
+        String sql = "UPDATE users SET is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?";
+        
+        try (Connection connection = DatabaseConnectionManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+            
+            stmt.setBoolean(1, isActive);
+            stmt.setInt(2, userId);
+            
+            int rowsAffected = stmt.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                String message = "User status updated to " + (isActive ? "active" : "inactive");
+                System.out.println(message + " for user ID: " + userId);
+                return new UpdateResult(true, message);
+            } else {
+                String message = "User not found or no changes made";
+                System.out.println(message + " for user ID: " + userId);
+                return new UpdateResult(false, message);
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error updating user status for user ID: " + userId + " - " + e.getMessage());
+            return new UpdateResult(false, "Database error during status update");
+        }
+    }
+
+    /**
+     * Update user role
+     */
+    public UpdateResult updateUserRole(int userId, User.Role newRole) {
+        String sql = "UPDATE users SET role = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?";
+        
+        try (Connection connection = DatabaseConnectionManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+            
+            stmt.setString(1, newRole.name());
+            stmt.setInt(2, userId);
+            
+            int rowsAffected = stmt.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                String message = "User role updated to " + newRole;
+                System.out.println(message + " for user ID: " + userId);
+                return new UpdateResult(true, message);
+            } else {
+                String message = "User not found or no changes made";
+                System.out.println(message + " for user ID: " + userId);
+                return new UpdateResult(false, message);
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error updating user role for user ID: " + userId + " - " + e.getMessage());
+            return new UpdateResult(false, "Database error during role update");
+        }
+    }
+
+    /**
+     * Get user by ID
+     */
+    public User getUserById(int userId) {
+        String sql = "SELECT user_id, name, email, role, phone, address, is_active, created_at FROM users WHERE user_id = ?";
+        
+        try (Connection connection = DatabaseConnectionManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+            
+            stmt.setInt(1, userId);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    User user = new User();
+                    user.setUserId(rs.getInt("user_id"));
+                    user.setName(rs.getString("name"));
+                    user.setEmail(rs.getString("email"));
+                    user.setRole(User.Role.valueOf(rs.getString("role")));
+                    user.setPhone(rs.getString("phone"));
+                    user.setAddress(rs.getString("address"));
+                    user.setActive(rs.getBoolean("is_active"));
+                    user.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                    return user;
+                }
+            }
+            
+            return null;
+            
+        } catch (SQLException e) {
+            System.err.println("Error retrieving user by ID: " + userId + " - " + e.getMessage());
+            return null;
+        }
+    }
+
     // Result classes for clean return types
     public static class AuthResult {
         private final boolean success;

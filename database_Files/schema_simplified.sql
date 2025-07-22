@@ -124,14 +124,14 @@ CREATE TABLE order_items (
 DROP TABLE IF EXISTS transaction_log;
 CREATE TABLE transaction_log (
     transaction_id INT PRIMARY KEY AUTO_INCREMENT,
-    order_id INT NOT NULL COMMENT 'Reference to the order being paid',
+    order_id INT NULL COMMENT 'Reference to the order being paid',
     payment_status ENUM('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED') DEFAULT 'PENDING' COMMENT 'Payment status',
     amount DECIMAL(10,2) NOT NULL COMMENT 'Transaction amount',
     transaction_reference VARCHAR(100) COMMENT 'Contains Transaction ID or Status Change (If changed by admin)',
     processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'When transaction was processed',
     currency_id INT COMMENT 'Reference to the currency selected by the user',
     FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE RESTRICT,
-	FOREIGN KEY (currency_id) REFERENCES orders(currency_id)
+	FOREIGN KEY (currency_id) REFERENCES currencies(currency_id)
 );
 
 -- =====================================================

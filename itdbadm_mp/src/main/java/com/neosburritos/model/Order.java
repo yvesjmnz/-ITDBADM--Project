@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class Order {
     public enum Status {
-        PENDING, CONFIRMED, PREPARING, READY, DELIVERED, CANCELLED
+        PENDING, CONFIRMED, COMPLETED, CANCELLED
     }
 
     private int orderId;

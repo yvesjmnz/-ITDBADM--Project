@@ -103,6 +103,26 @@ public class CartDAO {
     }
     
     /**
+     * Update cart item customizations - using direct SQL since no specific SP exists
+     */
+    public boolean updateCartItemCustomization(int cartId, String customizations) {
+        String sql = "UPDATE cart_items SET customizations = ? WHERE cart_id = ?";
+        
+        try (Connection conn = DatabaseConnectionManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, customizations);
+            stmt.setInt(2, cartId);
+            
+            return stmt.executeUpdate() > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error updating cart item customizations: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
      * Remove item from cart - using direct SQL since no specific SP exists
      */
     public boolean removeFromCart(int cartId) {

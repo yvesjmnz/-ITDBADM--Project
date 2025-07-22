@@ -304,25 +304,24 @@
             cardLayout.show(mainPanel, "STORE");
         }
         
-        // // AdminPanel.AdminListener implementation
-        // @Override
-        // public void onBackToStore() {
-        //     storePanel.refreshData();
-        //     cardLayout.show(mainPanel, "STORE");
-        // }
+        // AdminPanel.AdminListener implementation
+        @Override
+        public void onManageProducts() {
+            cardLayout.show(mainPanel, "PRODUCTS");
+        }
 
+        @Override
+        public void onLogout() {
+            handleLogout();
+        }
+
+        
         private void handleLogout() {
             currentUser = null;
             loginPanel.clearForm();
             cardLayout.show(mainPanel, "LOGIN");
             System.out.println("User logged out");
         }
-
-        @Override
-        public void onManageProducts() {
-            cardLayout.show(mainPanel, "PRODUCTS");
-        }
-
         
         private void handleExit() {
             int option = JOptionPane.showConfirmDialog(

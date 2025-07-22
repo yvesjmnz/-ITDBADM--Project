@@ -323,44 +323,45 @@ public class SwingCartPanel extends JPanel {
     }
 
     private void handleEditSelectedItem() {
-    int selectedRow = cartTable.getSelectedRow();
-    if (selectedRow == -1) {
-        SwingUIConstants.showWarningDialog(parentFrame, "Please select an item to edit.", "No Selection");
-        return;
-    }
+        int selectedRow = cartTable.getSelectedRow();
+        if (selectedRow == -1) {
+            SwingUIConstants.showWarningDialog(parentFrame, "Please select an item to edit.", "No Selection");
+            return;
+        }
 
-    CartItem item = cartItems.get(selectedRow);
-    String currentCustomization = item.getCustomizations() != null ? item.getCustomizations() : "";
+        CartItem item = cartItems.get(selectedRow);
+        String currentCustomization = item.getCustomizations() != null ? item.getCustomizations() : "";
 
-    String newCustomization = JOptionPane.showInputDialog(parentFrame,
-            "Edit customizations for " + item.getProductName() + ":", currentCustomization);
+        String newCustomization = JOptionPane.showInputDialog(parentFrame,
+                "Edit customizations for " + item.getProductName() + ":", currentCustomization);
 
-    if (newCustomization != null) {
-        SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
-            @Override
-            protected Boolean doInBackground() {
-                return cartDAO.updateCartItemCustomization(item.getCartId(), newCustomization);
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    if (get()) {
-                        SwingUIConstants.showSuccessDialog(parentFrame,
-                                "Customization updated!", "Success");
-                        refreshCart();
-                        cartListener.onCartUpdated();
-                    } else {
-                        SwingUIConstants.showErrorDialog(parentFrame,
-                                "Failed to update item.", "Error");
-                    }
-                } catch (Exception ex) {
-                    SwingUIConstants.showErrorDialog(parentFrame,
-                            "Error updating item: " + ex.getMessage(), "Error");
+        if (newCustomization != null) {
+            SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
+                @Override
+                protected Boolean doInBackground() {
+                    return cartDAO.updateCartItemCustomization(item.getCartId(), newCustomization);
                 }
-            }
-        };
-        worker.execute();
+
+                @Override
+                protected void done() {
+                    try {
+                        if (get()) {
+                            SwingUIConstants.showSuccessDialog(parentFrame,
+                                    "Customization updated!", "Success");
+                            refreshCart();
+                            cartListener.onCartUpdated();
+                        } else {
+                            SwingUIConstants.showErrorDialog(parentFrame,
+                                    "Failed to update item.", "Error");
+                        }
+                    } catch (Exception ex) {
+                        SwingUIConstants.showErrorDialog(parentFrame,
+                                "Error updating item: " + ex.getMessage(), "Error");
+                    }
+                }
+            };
+            worker.execute();
+        }
     }
 
     private void handleDeleteSelectedItem() {

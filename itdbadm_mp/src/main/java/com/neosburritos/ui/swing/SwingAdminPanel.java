@@ -41,6 +41,7 @@ public class SwingAdminPanel extends JPanel {
     public interface AdminListener {
         // Removed onBackToStore - admin stays in admin panel
         void onManageProducts();
+        void onLogout();
     }
     
     private final JFrame parentFrame;

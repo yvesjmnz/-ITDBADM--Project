@@ -237,11 +237,6 @@
         }
         
         @Override
-        public void onLogout() {
-            handleLogout();
-        }
-        
-        @Override
         public void onCartUpdated(int itemCount) {
             System.out.println("Cart updated: " + itemCount + " items");
         }

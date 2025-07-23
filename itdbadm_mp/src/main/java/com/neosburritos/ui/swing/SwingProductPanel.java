@@ -19,7 +19,6 @@ public class SwingProductPanel extends JPanel {
     private JTextArea descriptionArea;
     private JTextField priceField;
     private JComboBox<Product.Category> categoryCombo;
-    private JCheckBox customizableCheck;
     private JCheckBox activeCheck;
     private JTextField stockField;
     private JComboBox<String> currencyCombo;
@@ -28,6 +27,7 @@ public class SwingProductPanel extends JPanel {
     private JButton clearButton;
     private JButton saveButton;
     private JButton backButton;
+    private JButton deleteButton;
 
     private int selectedProductId = -1;
 
@@ -43,11 +43,10 @@ public class SwingProductPanel extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         initComponents(listener);
-        loadProducts("USD");
+        loadAllProducts(); 
     }
 
     private void initComponents(ProductListener listener) {
-        // Button panel at the top
         JPanel topButtonPanel = new JPanel(new BorderLayout());
         backButton = new JButton("Back to Admin");
         saveButton = new JButton("Update Product");
@@ -57,14 +56,12 @@ public class SwingProductPanel extends JPanel {
         topButtonPanel.add(saveButton, BorderLayout.EAST);
         add(topButtonPanel, BorderLayout.NORTH);
 
-        // Table setup
-        tableModel = new DefaultTableModel(new Object[]{"ID", "Name", "Price", "Category", "Stock", "Customizable", "Active"}, 0);
+        tableModel = new DefaultTableModel(new Object[]{"ID", "Name", "Price", "Category", "Stock", "Active"}, 0);
         productTable = new JTable(tableModel);
         productTable.getSelectionModel().addListSelectionListener(e -> loadSelectedProduct());
         JScrollPane scrollPane = new JScrollPane(productTable);
         scrollPane.setPreferredSize(new Dimension(800, 200));
 
-        // Form panel
         JPanel formPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -108,14 +105,12 @@ public class SwingProductPanel extends JPanel {
         formPanel.add(currencyCombo, gbc);
 
         gbc.gridx = 0; gbc.gridy++;
-        customizableCheck = new JCheckBox("Customizable");
-        formPanel.add(customizableCheck, gbc);
-
+        formPanel.add(new JLabel("Status:"), gbc);
         gbc.gridx = 1;
         activeCheck = new JCheckBox("Active");
         formPanel.add(activeCheck, gbc);
 
-        // Main center panel
+
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.add(formPanel);
@@ -123,16 +118,18 @@ public class SwingProductPanel extends JPanel {
         centerPanel.add(scrollPane);
         add(centerPanel, BorderLayout.CENTER);
 
-        // Button panel at bottom for actions
         JPanel buttonPanel = new JPanel();
         addButton = new JButton("Add Product");
         clearButton = new JButton("Clear Form");
+        deleteButton = new JButton("Delete Product");
 
         addButton.addActionListener(this::handleAdd);
         clearButton.addActionListener(e -> clearForm());
+        deleteButton.addActionListener(e -> handleDelete());
 
         buttonPanel.add(addButton);
         buttonPanel.add(clearButton);
+        buttonPanel.add(deleteButton);
 
         add(buttonPanel, BorderLayout.SOUTH);
     }
@@ -142,8 +139,8 @@ public class SwingProductPanel extends JPanel {
         List<Product> products = productDAO.getProductsByCurrency(currencyCode, null);
         for (Product p : products) {
             tableModel.addRow(new Object[]{
-                p.getProductId(), p.getName(), p.getFormattedPrice(), p.getCategory(),
-                p.getStockQuantity(), p.isCustomizable(), p.isActive()
+                    p.getProductId(), p.getName(), p.getFormattedPrice(), p.getCategory(),
+                    p.getStockQuantity(), p.isActive()
             });
         }
     }
@@ -156,8 +153,7 @@ public class SwingProductPanel extends JPanel {
             priceField.setText(tableModel.getValueAt(row, 2).toString().replaceAll("[^0-9.]", ""));
             categoryCombo.setSelectedItem(Product.Category.valueOf(tableModel.getValueAt(row, 3).toString()));
             stockField.setText(tableModel.getValueAt(row, 4).toString());
-            customizableCheck.setSelected((Boolean) tableModel.getValueAt(row, 5));
-            activeCheck.setSelected((Boolean) tableModel.getValueAt(row, 6));
+            activeCheck.setSelected((Boolean) tableModel.getValueAt(row, 5));
         }
     }
 
@@ -168,10 +164,9 @@ public class SwingProductPanel extends JPanel {
             BigDecimal price = new BigDecimal(priceField.getText());
             String currency = (String) currencyCombo.getSelectedItem();
             Product.Category category = (Product.Category) categoryCombo.getSelectedItem();
-            boolean customizable = customizableCheck.isSelected();
             int stock = Integer.parseInt(stockField.getText());
 
-            ProductDAO.AddProductResult result = productDAO.addProduct(name, desc, price, currency, category, customizable, stock);
+            ProductDAO.AddProductResult result = productDAO.addProduct(name, desc, price, currency, category, false, stock);
             JOptionPane.showMessageDialog(this, result.getMessage());
             if (result.isSuccess()) {
                 loadProducts(currency);
@@ -182,56 +177,70 @@ public class SwingProductPanel extends JPanel {
         }
     }
 
-    private void handleUpdate(ActionEvent e) {
-        if (selectedProductId < 0) {
-            JOptionPane.showMessageDialog(this, "Please select a product to update.");
-            return;
-        }
-
-        nameField.setEnabled(true);
-        descriptionArea.setEnabled(true);
-        priceField.setEnabled(true);
-        categoryCombo.setEnabled(true);
-        stockField.setEnabled(true);
-        customizableCheck.setEnabled(true);
-        activeCheck.setEnabled(true);
-    }
-
     private void handleSave(ActionEvent e) {
         if (selectedProductId < 0) {
             JOptionPane.showMessageDialog(this, "Please select a product to update.");
             return;
         }
 
-        // First time clicking 'Save Changes' just enables the form
         if (!nameField.isEnabled()) {
             nameField.setEnabled(true);
             descriptionArea.setEnabled(true);
             priceField.setEnabled(true);
             categoryCombo.setEnabled(true);
             stockField.setEnabled(true);
-            customizableCheck.setEnabled(true);
             activeCheck.setEnabled(true);
             return;
         }
 
-        // Second time actually performs the save
         try {
             String name = nameField.getText();
             String desc = descriptionArea.getText();
+            if (desc == null || desc.trim().isEmpty()) {
+                desc = productDAO.getProductDescription(selectedProductId);
+            }
             BigDecimal price = new BigDecimal(priceField.getText());
             int stock = Integer.parseInt(stockField.getText());
             boolean isActive = activeCheck.isSelected();
 
             ProductDAO.UpdateProductResult result = productDAO.updateProduct(
-                selectedProductId, name, desc, price, stock, isActive);
+                    selectedProductId, name, desc, price, stock, isActive);
             JOptionPane.showMessageDialog(this, result.getMessage());
             if (result.isSuccess()) {
-                loadProducts((String) currencyCombo.getSelectedItem());
+                loadAllProducts();
                 clearForm();
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error saving product: " + ex.getMessage());
+        }
+    }
+
+    private void handleDelete() {
+        if (selectedProductId < 0) {
+            JOptionPane.showMessageDialog(this, "Please select a product to delete.");
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this product?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        boolean success = productDAO.deleteProduct(selectedProductId);
+        if (success) {
+            JOptionPane.showMessageDialog(this, "Product deleted successfully.");
+            loadAllProducts();
+            clearForm();
+        } else {
+            JOptionPane.showMessageDialog(this, "Failed to delete product.");
+        }
+    }
+        private void loadAllProducts() {
+        tableModel.setRowCount(0);
+        List<Product> products = productDAO.getAllProducts();
+        for (Product p : products) {
+            tableModel.addRow(new Object[]{
+                    p.getProductId(), p.getName(), p.getFormattedPrice(), p.getCategory(),
+                    p.getStockQuantity(), p.isActive()
+            });
         }
     }
 
@@ -244,14 +253,12 @@ public class SwingProductPanel extends JPanel {
         stockField.setText("");
         categoryCombo.setSelectedIndex(0);
         currencyCombo.setSelectedIndex(0);
-        customizableCheck.setSelected(false);
         activeCheck.setSelected(false);
         nameField.setEnabled(true);
         descriptionArea.setEnabled(true);
         priceField.setEnabled(true);
         categoryCombo.setEnabled(true);
         stockField.setEnabled(true);
-        customizableCheck.setEnabled(true);
         activeCheck.setEnabled(true);
         productTable.clearSelection();
     }

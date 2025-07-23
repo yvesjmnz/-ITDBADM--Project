@@ -288,6 +288,38 @@ public class ProductDAO {
         public String getMessage() { return message; }
     }
 
+    public String getProductDescription(int productId) {
+        String sql = "SELECT description FROM products WHERE product_id = ?";
+        try (Connection connection = DatabaseConnectionManager.getConnection();
+            PreparedStatement stmt = connection.prepareStatement(sql)) {
+        
+        stmt.setInt(1, productId);
+        ResultSet rs = stmt.executeQuery();
+        
+        if (rs.next()) {
+            return rs.getString("description");
+        }
+    } catch (SQLException e) {
+        System.err.println("Error fetching description for product ID " + productId + ": " + e.getMessage());
+    }
+    return "";
+}
+    public boolean deleteProduct(int productId) {
+    String sql = "DELETE FROM products WHERE product_id = ?";
+    try (Connection connection = DatabaseConnectionManager.getConnection();
+         PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+        stmt.setInt(1, productId);
+        int affectedRows = stmt.executeUpdate();
+
+        return affectedRows > 0;
+    } catch (SQLException e) {
+        System.err.println("Error deleting product ID " + productId + ": " + e.getMessage());
+        return false;
+    }
+}
+
+
     public static class ConversionResult {
         private final boolean success;
         private final BigDecimal convertedAmount;

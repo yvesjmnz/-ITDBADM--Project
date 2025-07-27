@@ -24,6 +24,7 @@
     import com.neosburritos.ui.swing.SwingOrderHistoryPanel;
     import com.neosburritos.ui.swing.SwingProductPanel;
     import com.neosburritos.ui.swing.SwingRegisterPanel;
+    import com.neosburritos.ui.swing.SwingStaffPanel;
     import com.neosburritos.ui.swing.SwingStorePanel;
     import com.neosburritos.ui.swing.SwingUIConstants;
     import com.neosburritos.util.DatabaseConnection;
@@ -41,7 +42,8 @@
         SwingCheckoutPanel.CheckoutListener,
         SwingOrderHistoryPanel.OrderHistoryListener,
         SwingAdminPanel.AdminListener,
-        SwingProductPanel.ProductListener {
+        SwingProductPanel.ProductListener, 
+        SwingStaffPanel.StaffListener{
         
         // DAOs and Services
         private final UserDAO userDAO;
@@ -65,6 +67,7 @@
         private SwingCheckoutPanel checkoutPanel;
         private SwingOrderHistoryPanel orderHistoryPanel;
         private SwingAdminPanel adminPanel;
+        private SwingStaffPanel staffPanel;
         
         public NeosAppSwing() {
             super("Neo's Burritos - Modern Online Store");
@@ -130,6 +133,7 @@
             mainPanel.add(checkoutPanel, "CHECKOUT");
             mainPanel.add(orderHistoryPanel, "ORDERS");
             mainPanel.add(adminPanel, "ADMIN");
+            mainPanel.add(staffPanel, "STAFF");
             
             add(mainPanel, BorderLayout.CENTER);
             
@@ -149,6 +153,7 @@
             checkoutPanel = new SwingCheckoutPanel(this, orderDAO, cartDAO, paymentService, this);
             orderHistoryPanel = new SwingOrderHistoryPanel(this, orderDAO, this);
             adminPanel = new SwingAdminPanel(this, orderDAO, productDAO, userDAO, this);
+            staffPanel = new SwingStaffPanel(this, orderDAO, productDAO, this);
         }
         
         private void setupEventHandlers() {
@@ -191,7 +196,12 @@
             if (user.getRole() == User.Role.ADMIN) {
                 adminPanel.setCurrentUser(user);
                 cardLayout.show(mainPanel, "ADMIN");
-            } else {
+            
+            } else if (user.getRole() == User.Role.STAFF) {
+                staffPanel.setCurrentUser(user);
+                cardLayout.show(mainPanel, "STAFF");   
+            } 
+            else {
                 cardLayout.show(mainPanel, "STORE");
             }
         }

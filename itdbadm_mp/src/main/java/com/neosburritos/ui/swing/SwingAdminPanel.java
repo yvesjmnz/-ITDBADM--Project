@@ -524,9 +524,10 @@ public class SwingAdminPanel extends JPanel {
     }
     
     private void handleSystemStats(ActionEvent e) {
-        SwingUIConstants.showWarningDialog(this, 
-            "Detailed statistics feature coming soon!", "Feature Not Available");
+        SystemStatisticsDialog dialog = new SystemStatisticsDialog(parentFrame);
+        dialog.setVisible(true);
     }
+
     
     public void setCurrentUser(User user) {
         this.currentUser = user;

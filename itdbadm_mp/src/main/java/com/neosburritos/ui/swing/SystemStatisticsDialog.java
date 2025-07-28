@@ -127,6 +127,7 @@ public class SystemStatisticsDialog extends JDialog {
                 data.add(new StatMetric("Active Products", productDAO.countActiveProducts()));
                 data.add(new StatMetric("Total Orders", orderDAO.countOrders()));
                 data.add(new StatMetric("Pending Orders", orderDAO.countOrdersByStatus("PENDING")));
+                data.add(new StatMetric("Confirmed Orders", orderDAO.countOrdersByStatus("CONFIRMED")));
                 data.add(new StatMetric("Completed Orders", orderDAO.countOrdersByStatus("COMPLETED")));
                 data.add(new StatMetric("Cancelled Orders", orderDAO.countOrdersByStatus("CANCELLED")));
                 return data;
@@ -186,6 +187,5 @@ public class SystemStatisticsDialog extends JDialog {
             return columnIndex == 1 ? Integer.class : String.class;
         }
     }
-
     private record StatMetric(String name, int value) { }
 } 

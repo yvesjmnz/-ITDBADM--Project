@@ -1,9 +1,14 @@
 package com.neosburritos.dao;
 
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+
 import com.neosburritos.model.User;
 import com.neosburritos.util.DatabaseConnectionManager;
-
-import java.sql.*;
 
 /**
  * Data Access Object for User operations
@@ -313,5 +318,27 @@ public class UserDAO {
 
         public boolean isSuccess() { return success; }
         public String getMessage() { return message; }
+    }
+
+    public int countUsers() {
+        String sql = "SELECT COUNT(*) FROM users";
+        try (Connection conn = DatabaseConnectionManager.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery()) {
+            return rs.next() ? rs.getInt(1) : 0;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    public int countActiveUsers() {
+        String sql = "SELECT COUNT(*) FROM users WHERE is_active = TRUE";
+        try (Connection conn = DatabaseConnectionManager.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery()) {
+            return rs.next() ? rs.getInt(1) : 0;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 }

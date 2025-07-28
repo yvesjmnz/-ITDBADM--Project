@@ -1,12 +1,17 @@
 package com.neosburritos.dao;
 
-import com.neosburritos.model.Product;
-import com.neosburritos.util.DatabaseConnectionManager;
-
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.neosburritos.model.Product;
+import com.neosburritos.util.DatabaseConnectionManager;
 
 /**
  * Enhanced Data Access Object for Product operations
@@ -331,5 +336,37 @@ public class ProductDAO {
 
         public boolean isSuccess() { return success; }
         public BigDecimal getConvertedAmount() { return convertedAmount; }
+    }
+
+    public int countProducts() {
+        String sql = "SELECT COUNT(*) FROM products";
+        try (Connection conn = DatabaseConnectionManager.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace(); // Or use your logger
+        }
+        return 0;
+    }
+
+    public int countActiveProducts() {
+        String sql = "SELECT COUNT(*) FROM products WHERE is_active = TRUE";
+        try (Connection conn = DatabaseConnectionManager.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }

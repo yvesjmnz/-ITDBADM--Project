@@ -1,13 +1,17 @@
 package com.neosburritos.dao;
 
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.neosburritos.model.Order;
 import com.neosburritos.model.OrderItem;
 import com.neosburritos.util.DatabaseConnectionManager;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.math.BigDecimal;
 
 /**
  * Data Access Object for Order operations
@@ -313,5 +317,39 @@ public class OrderDAO {
         }
         
         return orders;
+    }
+
+    public int countOrders() {
+        String sql = "SELECT COUNT(*) FROM orders";
+        try (Connection conn = DatabaseConnectionManager.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public int countOrdersByStatus(String status) {
+        String sql = "SELECT COUNT(*) FROM orders WHERE status = ?";
+        try (Connection conn = DatabaseConnectionManager.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, status);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                 }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }

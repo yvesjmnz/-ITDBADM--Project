@@ -524,7 +524,7 @@ public class SwingAdminPanel extends JPanel {
     }
     
     private void handleSystemStats(ActionEvent e) {
-        SystemStatisticsDialog dialog = new SystemStatisticsDialog(parentFrame);
+        SystemStatisticsDialog dialog = new SystemStatisticsDialog(parentFrame, userDAO, productDAO, orderDAO);
         dialog.setVisible(true);
     }
 

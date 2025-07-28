@@ -2,10 +2,8 @@ package com.neosburritos.ui.swing;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -13,9 +11,15 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker;
+import javax.swing.table.AbstractTableModel;
 
-import com.neosburritos.util.DatabaseConnectionManager;
+import com.neosburritos.dao.OrderDAO;
+import com.neosburritos.dao.ProductDAO;
+import com.neosburritos.dao.UserDAO;
 
 /**
  * System Statistics Dialog for Admin Panel
@@ -24,41 +28,43 @@ import com.neosburritos.util.DatabaseConnectionManager;
 public class SystemStatisticsDialog extends JDialog {
 
     private final JFrame parentFrame;
+    private final UserDAO userDAO;
+    private final ProductDAO productDAO;
+    private final OrderDAO orderDAO;
 
-    // UI Components
-    private JLabel totalUsersLabel;
-    private JLabel activeUsersLabel;
-    private JLabel totalProductsLabel;
-    private JLabel activeProductsLabel;
-    private JLabel totalOrdersLabel;
-    private JLabel pendingOrdersLabel;
-    private JLabel completedOrdersLabel;
-    private JLabel cancelledOrdersLabel;
+    private JTable statsTable;
+    private StatsTableModel tableModel;
     private JButton refreshButton;
     private JButton closeButton;
 
-    public SystemStatisticsDialog(JFrame parent) {
+    private List<StatMetric> stats;
+
+    public SystemStatisticsDialog(JFrame parent, UserDAO userDAO, ProductDAO productDAO, OrderDAO orderDAO) {
         super(parent, "System Statistics", true);
         this.parentFrame = parent;
+        this.userDAO = userDAO;
+        this.productDAO = productDAO;
+        this.orderDAO = orderDAO;
 
         initializeComponents();
         layoutComponents();
         setupEventHandlers();
-        loadStatistics();
+        loadStats();
 
-        setSize(700, 500);
+        setSize(900, 600);
         setLocationRelativeTo(parent);
     }
 
     private void initializeComponents() {
-        totalUsersLabel = SwingUIConstants.createSecondaryLabel("Total Users: Loading...");
-        activeUsersLabel = SwingUIConstants.createSecondaryLabel("Active Users: Loading...");
-        totalProductsLabel = SwingUIConstants.createSecondaryLabel("Total Products: Loading...");
-        activeProductsLabel = SwingUIConstants.createSecondaryLabel("Active Products: Loading...");
-        totalOrdersLabel = SwingUIConstants.createSecondaryLabel("Total Orders: Loading...");
-        pendingOrdersLabel = SwingUIConstants.createSecondaryLabel("Pending Orders: Loading...");
-        completedOrdersLabel = SwingUIConstants.createSecondaryLabel("Completed Orders: Loading...");
-        cancelledOrdersLabel = SwingUIConstants.createSecondaryLabel("Cancelled Orders: Loading...");
+        tableModel = new StatsTableModel();
+        statsTable = new JTable(tableModel);
+        statsTable.setFont(SwingUIConstants.BODY_FONT);
+        statsTable.setRowHeight(30);
+        statsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        statsTable.setBackground(SwingUIConstants.SURFACE_COLOR);
+
+        statsTable.getColumnModel().getColumn(0).setPreferredWidth(200);
+        statsTable.getColumnModel().getColumn(1).setPreferredWidth(100);
 
         refreshButton = SwingUIConstants.createSecondaryButton("Refresh");
         closeButton = SwingUIConstants.createPrimaryButton("Close");
@@ -70,115 +76,116 @@ public class SystemStatisticsDialog extends JDialog {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(SwingUIConstants.BACKGROUND_COLOR);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(
-            SwingUIConstants.PADDING_MEDIUM, SwingUIConstants.PADDING_MEDIUM,
-            SwingUIConstants.PADDING_MEDIUM, SwingUIConstants.PADDING_MEDIUM
+                SwingUIConstants.PADDING_MEDIUM, SwingUIConstants.PADDING_MEDIUM,
+                SwingUIConstants.PADDING_MEDIUM, SwingUIConstants.PADDING_MEDIUM
         ));
 
         JLabel titleLabel = SwingUIConstants.createTitleLabel("System Statistics");
         headerPanel.add(titleLabel, BorderLayout.WEST);
 
         JLabel instructionLabel = SwingUIConstants.createSecondaryLabel(
-            "Real-time metrics of system usage and performance"
+                "Overview of system usage metrics"
         );
         headerPanel.add(instructionLabel, BorderLayout.CENTER);
 
         headerPanel.add(refreshButton, BorderLayout.EAST);
         add(headerPanel, BorderLayout.NORTH);
 
-        JPanel statsPanel = new JPanel();
-        statsPanel.setLayout(new GridLayout(8, 1, 10, 10));
-        statsPanel.setBackground(SwingUIConstants.SURFACE_COLOR);
-        statsPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(SwingUIConstants.BORDER_COLOR),
-            "Statistics Overview",
-            javax.swing.border.TitledBorder.LEFT,
-            javax.swing.border.TitledBorder.TOP,
-            SwingUIConstants.HEADER_FONT,
-            SwingUIConstants.TEXT_PRIMARY
+        JScrollPane scrollPane = new JScrollPane(statsTable);
+        scrollPane.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(SwingUIConstants.BORDER_COLOR),
+                "Metrics Overview",
+                javax.swing.border.TitledBorder.LEFT,
+                javax.swing.border.TitledBorder.TOP,
+                SwingUIConstants.HEADER_FONT,
+                SwingUIConstants.TEXT_PRIMARY
         ));
-
-        statsPanel.add(totalUsersLabel);
-        statsPanel.add(activeUsersLabel);
-        statsPanel.add(totalProductsLabel);
-        statsPanel.add(activeProductsLabel);
-        statsPanel.add(totalOrdersLabel);
-        statsPanel.add(pendingOrdersLabel);
-        statsPanel.add(completedOrdersLabel);
-        statsPanel.add(cancelledOrdersLabel);
-
-        add(statsPanel, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
 
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, SwingUIConstants.PADDING_MEDIUM, SwingUIConstants.PADDING_MEDIUM));
         footerPanel.setBackground(SwingUIConstants.BACKGROUND_COLOR);
         footerPanel.add(closeButton);
-
         add(footerPanel, BorderLayout.SOUTH);
     }
 
     private void setupEventHandlers() {
-        refreshButton.addActionListener(e -> loadStatistics());
+        refreshButton.addActionListener(e -> loadStats());
         closeButton.addActionListener(e -> dispose());
     }
 
-    private void loadStatistics() {
+    private void loadStats() {
         refreshButton.setEnabled(false);
         refreshButton.setText("Loading...");
 
-        SwingWorker<Void, Void> worker = new SwingWorker<>() {
-            int totalUsers, activeUsers, totalProducts, activeProducts, totalOrders, pendingOrders, completedOrders, cancelledOrders;
-
+        SwingWorker<List<StatMetric>, Void> worker = new SwingWorker<>() {
             @Override
-            protected Void doInBackground() throws Exception {
-                String userSQL = "SELECT COUNT(*) AS total, SUM(CASE WHEN is_active THEN 1 ELSE 0 END) AS active FROM users";
-                String productSQL = "SELECT COUNT(*) AS total, SUM(CASE WHEN is_active THEN 1 ELSE 0 END) AS active FROM products";
-                String orderSQL = "SELECT COUNT(*) AS total,\n                                SUM(CASE WHEN status = 'PENDING' THEN 1 ELSE 0 END) AS pending,\n                                SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) AS completed,\n                                SUM(CASE WHEN status = 'CANCELLED' THEN 1 ELSE 0 END) AS cancelled FROM orders";
-
-                try (Connection conn = DatabaseConnectionManager.getConnection()) {
-                    try (PreparedStatement stmt = conn.prepareStatement(userSQL);
-                         ResultSet rs = stmt.executeQuery()) {
-                        if (rs.next()) {
-                            totalUsers = rs.getInt("total");
-                            activeUsers = rs.getInt("active");
-                        }
-                    }
-
-                    try (PreparedStatement stmt = conn.prepareStatement(productSQL);
-                         ResultSet rs = stmt.executeQuery()) {
-                        if (rs.next()) {
-                            totalProducts = rs.getInt("total");
-                            activeProducts = rs.getInt("active");
-                        }
-                    }
-
-                    try (PreparedStatement stmt = conn.prepareStatement(orderSQL);
-                         ResultSet rs = stmt.executeQuery()) {
-                        if (rs.next()) {
-                            totalOrders = rs.getInt("total");
-                            pendingOrders = rs.getInt("pending");
-                            completedOrders = rs.getInt("completed");
-                            cancelledOrders = rs.getInt("cancelled");
-                        }
-                    }
-                }
-                return null;
+            protected List<StatMetric> doInBackground() throws Exception {
+                List<StatMetric> data = new ArrayList<>();
+                data.add(new StatMetric("Total Users", userDAO.countUsers()));
+                data.add(new StatMetric("Active Users", userDAO.countActiveUsers()));
+                data.add(new StatMetric("Total Products", productDAO.countProducts()));
+                data.add(new StatMetric("Active Products", productDAO.countActiveProducts()));
+                data.add(new StatMetric("Total Orders", orderDAO.countOrders()));
+                data.add(new StatMetric("Pending Orders", orderDAO.countOrdersByStatus("PENDING")));
+                data.add(new StatMetric("Completed Orders", orderDAO.countOrdersByStatus("COMPLETED")));
+                data.add(new StatMetric("Cancelled Orders", orderDAO.countOrdersByStatus("CANCELLED")));
+                return data;
             }
 
             @Override
             protected void done() {
-                totalUsersLabel.setText("Total Users: " + totalUsers);
-                activeUsersLabel.setText("Active Users: " + activeUsers);
-                totalProductsLabel.setText("Total Products: " + totalProducts);
-                activeProductsLabel.setText("Active Products: " + activeProducts);
-                totalOrdersLabel.setText("Total Orders: " + totalOrders);
-                pendingOrdersLabel.setText("Pending Orders: " + pendingOrders);
-                completedOrdersLabel.setText("Completed Orders: " + completedOrders);
-                cancelledOrdersLabel.setText("Cancelled Orders: " + cancelledOrders);
-
-                refreshButton.setEnabled(true);
-                refreshButton.setText("Refresh");
+                try {
+                    stats = get();
+                    tableModel.setStats(stats);
+                } catch (Exception e) {
+                    SwingUIConstants.showErrorDialog(SystemStatisticsDialog.this,
+                            "Failed to load system statistics: " + e.getMessage(),
+                            "Load Error");
+                } finally {
+                    refreshButton.setEnabled(true);
+                    refreshButton.setText("Refresh");
+                }
             }
         };
 
         worker.execute();
     }
-}
+
+    private static class StatsTableModel extends AbstractTableModel {
+        private final String[] columnNames = { "Metric", "Value" };
+        private List<StatMetric> stats = new ArrayList<>();
+
+        public void setStats(List<StatMetric> stats) {
+            this.stats = stats;
+            fireTableDataChanged();
+        }
+
+        @Override
+        public int getRowCount() {
+            return stats.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return columnNames.length;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return columnNames[column];
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            StatMetric stat = stats.get(rowIndex);
+            return columnIndex == 0 ? stat.name() : stat.value();
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return columnIndex == 1 ? Integer.class : String.class;
+        }
+    }
+
+    private record StatMetric(String name, int value) { }
+} 
